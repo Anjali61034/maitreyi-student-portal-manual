@@ -1,0 +1,76 @@
+"use client"
+
+import { Button } from "@/components/ui/button"
+import { createClient } from "@/lib/supabase/client"
+import { Award, FileText, Home, LogOut, Trophy, User } from "lucide-react"
+import Link from "next/link"
+import { usePathname, useRouter } from "next/navigation"
+import { cn } from "@/lib/utils"
+
+interface DashboardNavProps {
+  profile: {
+    full_name: string
+    email: string
+    role: string
+    student_id?: string
+  }
+  isOpen: boolean
+}
+
+export function DashboardNav({ profile, isOpen }: DashboardNavProps) {
+  const pathname = usePathname()
+  const router = useRouter()
+  const supabase = createClient()
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut()
+    router.push("/auth/login")
+  }
+
+  const navItems = [
+    { href: "/dashboard", label: "Dashboard", icon: Home },
+    { href: "/dashboard/submissions", label: "My Submissions", icon: FileText },
+    { href: "/dashboard/new-submission", label: "New Submission", icon: Award },
+    { href: "/dashboard/merit", label: "Merit Ranking", icon: Trophy },
+    { href: "/dashboard/profile", label: "Profile", icon: User },
+  ]
+
+  return (
+    <aside
+      className={cn(
+        "fixed left-0 top-0 z-40 h-screen border-r bg-background transition-transform duration-300 ease-in-out",
+        isOpen ? "translate-x-0 w-64" : "-translate-x-full w-64",
+      )}
+    >
+      <div className="flex h-full flex-col">
+        <div className="border-b p-6">
+          <h2 className="text-lg font-semibold">Student Portal</h2>
+          <p className="text-sm text-muted-foreground mt-1">{profile.full_name}</p>
+          {profile.student_id && <p className="text-xs text-muted-foreground">{profile.student_id}</p>}
+        </div>
+
+        <nav className="flex-1 space-y-1 p-4">
+          {navItems.map((item) => {
+            const Icon = item.icon
+            const isActive = pathname === item.href
+            return (
+              <Link key={item.href} href={item.href}>
+                <Button variant={isActive ? "secondary" : "ghost"} className="w-full justify-start gap-3" size="sm">
+                  <Icon className="h-4 w-4" />
+                  {item.label}
+                </Button>
+              </Link>
+            )
+          })}
+        </nav>
+
+        <div className="border-t p-4">
+          <Button variant="ghost" className="w-full justify-start gap-3" size="sm" onClick={handleLogout}>
+            <LogOut className="h-4 w-4" />
+            Logout
+          </Button>
+        </div>
+      </div>
+    </aside>
+  )
+}
