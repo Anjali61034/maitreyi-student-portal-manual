@@ -6,7 +6,6 @@ import { useState } from "react"
 import { DashboardNav } from "./dashboard-nav"
 import { Button } from "./ui/button"
 import { Menu } from "lucide-react"
-import { cn } from "@/lib/utils"
 
 interface DashboardLayoutClientProps {
   profile: any
@@ -24,7 +23,7 @@ export function DashboardLayoutClient({ profile, children }: DashboardLayoutClie
         <div className="fixed inset-0 z-30 bg-black/50 lg:hidden" onClick={() => setSidebarOpen(false)} />
       )}
 
-      <div className={cn("flex-1 flex flex-col transition-all duration-300", sidebarOpen ? "lg:ml-64" : "ml-0")}>
+      <div className="flex-1 flex flex-col lg:pl-64">
         <header className="sticky top-0 z-20 border-b bg-background px-4 py-3">
           <Button variant="ghost" size="icon" onClick={() => setSidebarOpen(!sidebarOpen)}>
             <Menu className="h-5 w-5" />
@@ -32,7 +31,7 @@ export function DashboardLayoutClient({ profile, children }: DashboardLayoutClie
         </header>
 
         <main className="flex-1 overflow-y-auto bg-muted/40">
-          <div className="container py-6">{children}</div>
+          <div className="container mx-auto py-6">{children}</div>
         </main>
       </div>
     </div>
