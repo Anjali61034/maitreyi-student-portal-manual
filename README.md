@@ -70,11 +70,16 @@ npm install
 npm run dev
 ```
 
-Create .env.local in the root directory:
+### Environment Variables
 
+Create a `.env.local` file in the root directory:
+
+```env
 NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+```
 
 
 Deplyed on Vercel :
-maitreyi-student-portal-manual.vercel.app
+https://maitreyi-student-portal-manual.vercel.app
+
