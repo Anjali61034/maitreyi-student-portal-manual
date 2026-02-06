@@ -66,3 +66,15 @@ A comprehensive web-based platform for students to submit achievements
 ```bash
 git clone <your-repo-url>
 cd merit-portal
+npm install
+npm run dev
+```
+
+Create .env.local in the root directory:
+
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+
+
+Deplyed on Vercel :
+maitreyi-student-portal-manual.vercel.app
