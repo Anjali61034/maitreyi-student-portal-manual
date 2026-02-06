@@ -32,12 +32,13 @@ interface Submission {
   created_at: string
   proof_url: string | null
   proof_file_name: string | null
+  category?: string // ADDED: For direct submissions
   student: {
     full_name: string
     student_id: string
     department: string
   }
-  achievements: {
+  achievements?: { // Made optional for new direct submissions
     name: string
     category: string
     max_points: number
@@ -132,8 +133,11 @@ export function SubmissionsTable({ submissions }: { submissions: Submission[] })
                       {submission.student.full_name} ({submission.student.student_id}) • {submission.student.department}
                     </p>
                     <p className="text-sm text-muted-foreground">
-                      {submission.achievements.name} • {submission.achievements.category} • Max{" "}
-                      {submission.achievements.max_points} points
+                      {/* UPDATED: Handle both legacy (achievements) and new (category) data structures */}
+                      {submission.achievements?.name || submission.category || "General Achievement"} 
+                      {" • "}
+                      {submission.achievements?.category || submission.category} 
+                      {submission.achievements?.max_points && ` • Max ${submission.achievements.max_points} points`}
                     </p>
                   </div>
                   <Badge
@@ -191,7 +195,7 @@ export function SubmissionsTable({ submissions }: { submissions: Submission[] })
               <div>
                 <Label className="text-muted-foreground">Achievement Type</Label>
                 <p className="font-medium">
-                  {selectedSubmission.achievements.name} • {selectedSubmission.achievements.category}
+                  {selectedSubmission.achievements?.name || selectedSubmission.category || "General"} • {selectedSubmission.achievements?.category || selectedSubmission.category}
                 </p>
               </div>
 
@@ -262,8 +266,9 @@ export function SubmissionsTable({ submissions }: { submissions: Submission[] })
                       id="points"
                       type="number"
                       min="0"
-                      max={selectedSubmission.achievements.max_points}
-                      placeholder={`Max ${selectedSubmission.achievements.max_points} points`}
+                      // UPDATED: Use max_points if available, otherwise default to 5
+                      max={selectedSubmission.achievements?.max_points || 5}
+                      placeholder={selectedSubmission.achievements?.max_points ? `Max ${selectedSubmission.achievements.max_points} points` : "Enter points"}
                       value={reviewData.pointsAwarded}
                       onChange={(e) => setReviewData({ ...reviewData, pointsAwarded: e.target.value })}
                     />

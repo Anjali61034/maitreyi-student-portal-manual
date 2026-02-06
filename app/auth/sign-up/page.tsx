@@ -21,6 +21,7 @@ export default function SignUpPage() {
     role: "student",
     studentId: "",
     department: "",
+    stream: "", // ADDED: Initialize stream state
     yearOfStudy: "",
     phone: "",
   })
@@ -57,13 +58,14 @@ export default function SignUpPage() {
             role: formData.role,
             student_id: formData.studentId || null,
             department: formData.department || null,
+            stream: formData.stream || null, // ADDED: Save stream to profile
             year_of_study: formData.yearOfStudy ? Number.parseInt(formData.yearOfStudy) : null,
             phone: formData.phone || null,
           },
         },
       })
       if (error) throw error
-      router.push("/auth/sign-up-success")
+      router.push("/dashboard")
     } catch (error: unknown) {
       setError(error instanceof Error ? error.message : "An error occurred")
     } finally {
@@ -182,6 +184,22 @@ export default function SignUpPage() {
                           }
                         />
                       </div>
+                    </div>
+
+                    <div className="grid gap-2">
+                      <Label htmlFor="stream">Stream (Important for CGPA Calculation)</Label>
+                      <Select
+                        value={formData.stream}
+                        onValueChange={(value) => setFormData({ ...formData, stream: value })}
+                      >
+                        <SelectTrigger id="stream">
+                          <SelectValue placeholder="Select stream" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="humanities">Humanities</SelectItem>
+                          <SelectItem value="science">Science / Commerce</SelectItem>
+                        </SelectContent>
+                      </Select>
                     </div>
 
                     <div className="grid gap-4 md:grid-cols-2">

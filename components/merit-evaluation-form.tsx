@@ -14,7 +14,7 @@ import { useState } from "react"
 export function MeritEvaluationForm() {
   const [formData, setFormData] = useState({
     academicYear: "",
-    semester: "",
+    studentYear: "", // ADDED: Student Year Filter
   })
   const [isLoading, setIsLoading] = useState(false)
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null)
@@ -27,11 +27,18 @@ export function MeritEvaluationForm() {
     setMessage(null)
 
     try {
-      // Get all students with their approved submissions
-      const { data: students } = await supabase.from("profiles").select("id").eq("role", "student")
+      // Query to get students
+      let query = supabase.from("profiles").select("id").eq("role", "student")
+
+      // ADDED: Filter by Student Year if selected
+      if (formData.studentYear) {
+        query = query.eq("year_of_study", formData.studentYear)
+      }
+
+      const { data: students } = await query
 
       if (!students || students.length === 0) {
-        throw new Error("No students found")
+        throw new Error("No students found for the selected criteria")
       }
 
       // Calculate points for each student
@@ -63,7 +70,7 @@ export function MeritEvaluationForm() {
         return {
           student_id: student.student_id,
           academic_year: formData.academicYear,
-          semester: formData.semester,
+          student_year: formData.studentYear, // Store student year in evaluation if needed
           total_points: student.total_points,
           rank,
           percentile: Math.round(percentile * 100) / 100,
@@ -71,8 +78,10 @@ export function MeritEvaluationForm() {
       })
 
       // Insert evaluations (upsert to handle duplicates)
+      // Updated conflict constraint
       const { error } = await supabase.from("merit_evaluations").upsert(evaluations, {
-        onConflict: "student_id,academic_year,semester",
+        onConflict: "student_id,academic_year,student_year", 
+        // Note: You might need to update your DB unique constraint to include student_year if you want unique rows per year/batch
       })
 
       if (error) throw error
@@ -111,19 +120,22 @@ export function MeritEvaluationForm() {
                 onChange={(e) => setFormData({ ...formData, academicYear: e.target.value })}
               />
             </div>
+            
+            {/* ADDED: Student Year Filter */}
             <div className="grid gap-2">
-              <Label htmlFor="semester">Semester</Label>
+              <Label htmlFor="studentYear">Student Year</Label>
               <Select
-                value={formData.semester}
-                onValueChange={(value) => setFormData({ ...formData, semester: value })}
+                value={formData.studentYear}
+                onValueChange={(value) => setFormData({ ...formData, studentYear: value })}
               >
-                <SelectTrigger id="semester">
-                  <SelectValue placeholder="Select semester" />
+                <SelectTrigger id="studentYear">
+                  <SelectValue placeholder="Select Student Year" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="Fall">Fall</SelectItem>
-                  <SelectItem value="Spring">Spring</SelectItem>
-                  <SelectItem value="Summer">Summer</SelectItem>
+                  <SelectItem value="1">First Year</SelectItem>
+                  <SelectItem value="2">Second Year</SelectItem>
+                  <SelectItem value="3">Third Year</SelectItem>
+                  <SelectItem value="4">Fourth Year</SelectItem>
                 </SelectContent>
               </Select>
             </div>

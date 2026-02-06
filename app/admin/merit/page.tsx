@@ -34,7 +34,8 @@ export default async function AdminMeritPage() {
                   <div>
                     <p className="font-medium">{evaluation.profiles.full_name}</p>
                     <p className="text-sm text-muted-foreground">
-                      {evaluation.profiles.student_id} • {evaluation.academic_year} - {evaluation.semester}
+                      {evaluation.profiles.student_id} • {evaluation.academic_year}
+                      {/* Removed semester display */}
                     </p>
                   </div>
                   <div className="text-right">

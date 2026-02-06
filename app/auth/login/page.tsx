@@ -35,34 +35,40 @@ export default function LoginPage() {
       if (signInError) throw signInError
 
       console.log("[v0] Login successful, user ID:", authData.user?.id)
-      console.log("[v0] User metadata:", authData.user?.user_metadata)
 
-      // Get user profile to determine role
+      // FIX: Use .maybeSingle() instead of .single()
+      // This prevents crashing if the profile row is missing or delayed
       const { data: profile, error: profileError } = await supabase
         .from("profiles")
         .select("role")
         .eq("id", authData.user.id)
-        .single()
+        .maybeSingle()
+
+      // Handle actual database errors (connection issues, etc), but NOT "row not found"
+      if (profileError) {
+        console.error("[v0] Real Database Error:", profileError)
+      }
 
       console.log("[v0] Profile query result:", { profile, profileError })
 
-      if (profileError) {
-        console.error("[v0] Profile fetch error:", profileError)
-        // If profile fetch fails, try to get role from user metadata
-        const roleFromMetadata = authData.user?.user_metadata?.role
-        console.log("[v0] Falling back to metadata role:", roleFromMetadata)
+      // LOGIC: Decide where to go
+      let role = "student" // Default fallback
 
-        if (roleFromMetadata === "admin") {
-          router.push("/admin")
-        } else {
-          router.push("/dashboard")
-        }
-        return
+      if (profile && profile.role) {
+        // 1. We found a profile row with a role
+        role = profile.role
+        console.log("[v0] Role found in profile:", role)
+      } else if (authData.user?.user_metadata?.role) {
+        // 2. Profile missing/empty, but role exists in metadata
+        role = authData.user.user_metadata.role
+        console.log("[v0] Role found in metadata:", role)
+      } else {
+        // 3. No role found anywhere, assume student
+        console.log("[v0] No role found, defaulting to student")
       }
 
-      console.log("[v0] Redirecting based on role:", profile?.role)
-
-      if (profile?.role === "admin") {
+      // Redirect based on final role decision
+      if (role === "admin") {
         router.push("/admin")
       } else {
         router.push("/dashboard")

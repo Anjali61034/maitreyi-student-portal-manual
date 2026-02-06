@@ -1,7 +1,6 @@
 "use client"
 
-import type React from "react"
-
+import React, { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -10,34 +9,109 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea"
 import { createClient } from "@/lib/supabase/client"
 import { useRouter } from "next/navigation"
-import { useState } from "react"
+import { Trash2, Plus } from "lucide-react"
 
-interface Achievement {
-  id: string
-  name: string
-  category: string
-  description: string
-  max_points: number
+// Standard Activity Points
+const ACTIVITY_POINTS = {
+  participation: 0.5,
+  rank3: 1.0,
+  rank2: 1.5,
+  rank1: 2.0,
+  leadership: 1.0,
 }
 
-interface NewSubmissionFormProps {
-  achievements: Achievement[]
+// Industry Experience Specific Points
+const INDUSTRY_POINTS = {
+  international: 2.0,
+  national: 1.5,
+  local: 1.0, // University / Local level
 }
 
-export function NewSubmissionForm({ achievements }: NewSubmissionFormProps) {
-  const [formData, setFormData] = useState({
-    achievementId: "",
-    title: "",
-    description: "",
-    achievementDate: "",
-    proofFile: null as File | null,
-  })
-  const [error, setError] = useState<string | null>(null)
-  const [isLoading, setIsLoading] = useState(false)
+export function NewSubmissionForm() {
   const router = useRouter()
   const supabase = createClient()
 
-  const selectedAchievement = achievements.find((a) => a.id === formData.achievementId)
+  // Form State
+  const [category, setCategory] = useState<string>("") 
+  const [academicType, setAcademicType] = useState<string>("cgpa") 
+  const [activityType, setActivityType] = useState<string>("participation")
+  const [industryLevel, setIndustryLevel] = useState<string>("local")
+  
+  const [title, setTitle] = useState("")
+  const [description, setDescription] = useState("")
+  const [date, setDate] = useState("")
+  const [proofFile, setProofFile] = useState<File | null>(null)
+  
+  // UPDATED: Changed to Year-wise CGPA State
+  const [cgpaList, setCgpaList] = useState([{ year: 1, cgpa: "" }])
+
+  // User Data & Limits
+  const [userStream, setUserStream] = useState<"humanities" | "science">("humanities")
+  const [existingPoints, setExistingPoints] = useState<Record<string, number>>({})
+  
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  // Fetch Data on Load
+  useEffect(() => {
+    const initData = async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return
+
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("stream")
+        .eq("id", user.id)
+        .single()
+      if (profile?.stream) setUserStream(profile.stream)
+
+      const { data: submissions } = await supabase
+        .from("submissions")
+        .select("category, points_awarded")
+        .eq("student_id", user.id)
+        .eq("status", "approved")
+
+      const totals: Record<string, number> = {}
+      submissions?.forEach((sub: any) => {
+        totals[sub.category] = (totals[sub.category] || 0) + (sub.points_awarded || 0)
+      })
+      setExistingPoints(totals)
+    }
+    initData()
+  }, [supabase])
+
+  // UPDATED: Calculate CGPA Points based on LAST (Highest Year) CGPA
+  const calculateCgpaPoints = (yearlyCgpas: { year: number, cgpa: string }[]): number => {
+    const validEntries = yearlyCgpas
+      .filter(y => y.cgpa !== "")
+      .map(y => ({ year: y.year, cgpa: parseFloat(y.cgpa) }))
+      .filter(y => !isNaN(y.cgpa))
+
+    if (validEntries.length === 0) return 0
+
+    // Find the entry with the highest year number (The "Last" CGPA)
+    const lastEntry = validEntries.reduce((prev, current) => {
+      return (prev.year > current.year) ? prev : current
+    })
+
+    const lastCgpa = parseFloat(lastEntry.cgpa.toFixed(2))
+
+    // Apply Rules based on Stream
+    if (userStream === "humanities") {
+      if (lastCgpa >= 8.0) return 5
+      if (lastCgpa >= 7.5) return 4
+      if (lastCgpa >= 7.0) return 3
+      if (lastCgpa >= 6.5) return 2
+      if (lastCgpa >= 6.0) return 1
+    } else {
+      if (lastCgpa >= 9.0) return 5
+      if (lastCgpa >= 8.5) return 4
+      if (lastCgpa >= 8.0) return 3
+      if (lastCgpa >= 7.5) return 2
+      if (lastCgpa >= 7.0) return 1
+    }
+    return 0
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -45,57 +119,104 @@ export function NewSubmissionForm({ achievements }: NewSubmissionFormProps) {
     setError(null)
 
     try {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser()
+      const { data: { user } } = await supabase.auth.getUser()
       if (!user) throw new Error("Not authenticated")
 
+      // If NOT CGPA mode, validate Date input normally
+      if (category !== "academic" || academicType !== "cgpa") {
+        const selectedDate = new Date(date)
+        const academicStart = new Date("2024-04-01")
+        const academicEnd = new Date("2025-03-31")
+        
+        if (!date || isNaN(selectedDate.getTime())) throw new Error("Please select a valid date.")
+        if (selectedDate < academicStart || selectedDate > academicEnd) {
+          throw new Error("Invalid date. Achievement must be within the 2024-2025 Academic Year (April 2024 - March 2025).")
+        }
+      }
+
+      let pointsToAward = 0
+      let finalCategory = category
+      let details = description
+      let finalTitle = title
+      let finalDate = date
+
+      // 1. ACADEMIC (CGPA) - SIMPLIFIED MODE
+      if (category === "academic" && academicType === "cgpa") {
+        const validCgpas = cgpaList.filter(c => c.cgpa !== "").map(c => parseFloat(c.cgpa)).filter(n => !isNaN(n))
+        if (validCgpas.length === 0) throw new Error("Please enter at least one valid CGPA")
+        
+        pointsToAward = calculateCgpaPoints(cgpaList)
+        
+        // Auto-generate Title, Description, and Date for CGPA mode
+        finalTitle = "Academic CGPA Performance"
+        details = `Year-wise CGPA: ${cgpaList.map(c => `Year ${c.year}: ${c.cgpa || '-'}`).join(", ")}.`
+        // Set date to today for CGPA records since it's a current status report
+        finalDate = new Date().toISOString().split('T')[0]
+        
+        finalCategory = "Academic (CGPA)"
+      } 
+      // 2. INDUSTRY EXPERIENCE
+      else if (category === "industry") {
+        pointsToAward = INDUSTRY_POINTS[industryLevel as keyof typeof INDUSTRY_POINTS] || 0
+        finalCategory = "Industry Experience"
+      }
+      // 3. STANDARD ACTIVITIES
+      else {
+        const typeKey = activityType as keyof typeof ACTIVITY_POINTS
+        pointsToAward = ACTIVITY_POINTS[typeKey] || 0
+
+        if (category === "academic") finalCategory = "Academic Engagement"
+        else if (category === "extra_curricular") finalCategory = "Extra Curricular"
+        else if (category === "outreach") finalCategory = "Outreach"
+        else if (category === "sports") finalCategory = "Sports"
+        else if (category === "ncc") finalCategory = "National Cadet Corps"
+      }
+
+      // VALIDATION: 5 Point Limit
+      const currentPoints = existingPoints[finalCategory] || 0
+      if (currentPoints + pointsToAward > 5) {
+        throw new Error(`Limit reached! You have ${currentPoints}/5 points in ${finalCategory}.`)
+      }
+
+      // FILE UPLOAD
       let proofUrl = null
       let proofFileName = null
 
-      // Upload proof file if provided
-      if (formData.proofFile) {
-        const fileExt = formData.proofFile.name.split(".").pop()
+      if (proofFile) {
+        const fileExt = proofFile.name.split(".").pop()
         const fileName = `${user.id}/${Date.now()}.${fileExt}`
 
         const { error: uploadError } = await supabase.storage
           .from("achievement-proofs")
-          .upload(fileName, formData.proofFile)
+          .upload(fileName, proofFile)
 
-        if (uploadError) {
-          if (uploadError.message.includes("Bucket not found")) {
-            throw new Error(
-              "Storage bucket not set up. Please ask your administrator to create the 'achievement-proofs' bucket in Supabase Storage. See SUPABASE_SETUP.md for instructions.",
-            )
-          }
-          throw uploadError
-        }
+        if (uploadError) throw new Error(`File upload failed: ${uploadError.message}`)
 
-        const {
-          data: { publicUrl },
-        } = supabase.storage.from("achievement-proofs").getPublicUrl(fileName)
-
+        const { data: { publicUrl } } = supabase.storage.from("achievement-proofs").getPublicUrl(fileName)
         proofUrl = publicUrl
-        proofFileName = formData.proofFile.name
+        proofFileName = proofFile.name
       }
 
-      // Insert submission
+      // INSERT TO DATABASE
       const { error: insertError } = await supabase.from("submissions").insert({
         student_id: user.id,
-        achievement_id: formData.achievementId,
-        title: formData.title,
-        description: formData.description,
-        achievement_date: formData.achievementDate,
+        title: finalTitle,
+        description: details,
+        category: finalCategory, 
+        achievement_date: finalDate,
         proof_url: proofUrl,
         proof_file_name: proofFileName,
-        status: "pending",
+        points_awarded: pointsToAward,
+        status: "approved",
       })
 
       if (insertError) throw insertError
-
       router.push("/dashboard/submissions")
     } catch (error: unknown) {
-      setError(error instanceof Error ? error.message : "An error occurred")
+      let errorMessage = "An error occurred.";
+      if (error instanceof Error) errorMessage = error.message;
+      else if (typeof error === 'object' && error !== null && 'message' in error) errorMessage = (error as any).message;
+      setError(errorMessage);
     } finally {
       setIsLoading(false)
     }
@@ -104,80 +225,157 @@ export function NewSubmissionForm({ achievements }: NewSubmissionFormProps) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Achievement Details</CardTitle>
-        <CardDescription>Fill in the details of your achievement</CardDescription>
+        <CardTitle>Submit Achievement</CardTitle>
+        <CardDescription>Points are calculated automatically based on criteria.</CardDescription>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-6">
+          
+          {/* CATEGORY SELECTOR */}
           <div className="grid gap-2">
-            <Label htmlFor="achievement">Achievement Type</Label>
-            <Select
-              value={formData.achievementId}
-              onValueChange={(value) => setFormData({ ...formData, achievementId: value })}
-            >
-              <SelectTrigger id="achievement">
-                <SelectValue placeholder="Select achievement type" />
-              </SelectTrigger>
+            <Label>Category</Label>
+            <Select value={category} onValueChange={setCategory}>
+              <SelectTrigger><SelectValue placeholder="Select Category" /></SelectTrigger>
               <SelectContent>
-                {achievements.map((achievement) => (
-                  <SelectItem key={achievement.id} value={achievement.id}>
-                    {achievement.name} ({achievement.category}) - Max {achievement.max_points} points
-                  </SelectItem>
-                ))}
+                <SelectItem value="academic">Academic</SelectItem>
+                <SelectItem value="extra_curricular">Extra-Curricular</SelectItem>
+                <SelectItem value="outreach">Outreach Activities</SelectItem>
+                <SelectItem value="sports">Sports</SelectItem>
+                <SelectItem value="ncc">National Cadet Corps</SelectItem>
+                <SelectItem value="industry">Industry Experience</SelectItem>
               </SelectContent>
             </Select>
-            {selectedAchievement && <p className="text-sm text-muted-foreground">{selectedAchievement.description}</p>}
           </div>
 
+          {/* ACADEMIC SUB-TYPE */}
+          {category === "academic" && (
+            <div className="grid gap-2">
+              <Label>Academic Sub-Type</Label>
+              <Select value={academicType} onValueChange={setAcademicType}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="cgpa">CGPA Calculation</SelectItem>
+                  <SelectItem value="engagement">Research / Engagement</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+
+          {/* CONDITIONAL: HIDE TITLE, DETAILS, DATE IF CGPA MODE */}
+          {!(category === "academic" && academicType === "cgpa") && (
+            <>
+              <div className="grid gap-2">
+                <Label htmlFor="title">Title</Label>
+                <Input id="title" value={title} onChange={e => setTitle(e.target.value)} required placeholder="e.g. Internship at Google" />
+              </div>
+
+              <div className="grid gap-2">
+                <Label htmlFor="description">Details</Label>
+                <Textarea id="description" value={description} onChange={e => setDescription(e.target.value)} placeholder="More details..." />
+              </div>
+
+              <div className="grid gap-2">
+                <Label htmlFor="date">Date</Label>
+                <Input id="date" type="date" value={date} onChange={e => setDate(e.target.value)} required min="2024-04-01" max="2025-03-31" />
+                <p className="text-xs text-muted-foreground">Must be between April 2024 - March 2025</p>
+              </div>
+            </>
+          )}
+
+          {/* UPDATED: YEAR-WISE CGPA INPUTS */}
+{category === "academic" && academicType === "cgpa" && (
+  <div className="space-y-2 border p-4 rounded bg-slate-50">
+    <Label>Enter CGPA Year-wise (Based on 2 Semesters)</Label>
+    <p className="text-xs text-muted-foreground">Stream: {userStream.toUpperCase()} • Points calculated based on last (highest) year CGPA.</p>
+    
+    {cgpaList.map((item, idx) => (
+      <div key={idx} className="flex gap-2 items-center">
+        {/* CHANGED: value={idx + 1} */}
+        <Input 
+          type="number" 
+          placeholder="Year" 
+          value={idx + 1} 
+          disabled 
+          className="w-20" 
+        />
+        <Input 
+          type="number" 
+          step="0.01" 
+          placeholder="CGPA (e.g. 8.5)" 
+          value={item.cgpa} 
+          onChange={(e) => {
+            const list = [...cgpaList]; 
+            list[idx].cgpa = e.target.value; 
+            setCgpaList(list);
+          }} 
+        />
+        {cgpaList.length > 1 && (
+          <Button type="button" variant="ghost" size="icon" onClick={() => setCgpaList(cgpaList.filter((_, i) => i !== idx))}>
+            <Trash2 className="h-4 w-4" />
+          </Button>
+        )}
+      </div>
+    ))}
+    
+    {/* CHANGED: Added disabled={cgpaList.length >= 4} */}
+    <Button 
+      type="button" 
+      variant="outline" 
+      size="sm" 
+      disabled={cgpaList.length >= 4}
+      onClick={() => {
+        if (cgpaList.length < 4) {
+          setCgpaList([...cgpaList, { year: cgpaList.length + 1, cgpa: "" }]);
+        }
+      }}
+    >
+      <Plus className="h-4 w-4 mr-2" /> Add Year
+    </Button>
+  </div>
+)}
+
+          {/* INDUSTRY EXPERIENCE SPECIFIC INPUTS */}
+          {category === "industry" && (
+            <div className="grid gap-2">
+              <Label>Experience Level</Label>
+              <Select value={industryLevel} onValueChange={setIndustryLevel}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="international">International</SelectItem>
+                  <SelectItem value="national">National</SelectItem>
+                  <SelectItem value="local">University / Local</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+
+          {/* STANDARD ACTIVITY INPUTS */}
+          {category !== "academic" && category !== "industry" && (
+            <div className="grid gap-2">
+              <Label>Achievement Level</Label>
+              <Select value={activityType} onValueChange={setActivityType}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="participation">Participation </SelectItem>
+                  <SelectItem value="rank3">Rank 3 / Third Prize </SelectItem>
+                  <SelectItem value="rank2">Rank 2 / Second Prize </SelectItem>
+                  <SelectItem value="rank1">Rank 1 / First Prize </SelectItem>
+                  <SelectItem value="leadership">Leadership Role </SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+
+          {/* PROOF UPLOAD (Always Visible) */}
           <div className="grid gap-2">
-            <Label htmlFor="title">Title</Label>
-            <Input
-              id="title"
-              placeholder="e.g., First Class in Semester 5"
-              required
-              value={formData.title}
-              onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-            />
+            <Label htmlFor="proof">Proof Document</Label>
+            <Input id="proof" type="file" onChange={(e) => setProofFile(e.target.files?.[0] || null)} />
           </div>
 
-          <div className="grid gap-2">
-            <Label htmlFor="description">Description</Label>
-            <Textarea
-              id="description"
-              placeholder="Provide details about your achievement..."
-              required
-              rows={4}
-              value={formData.description}
-              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-            />
-          </div>
-
-          <div className="grid gap-2">
-            <Label htmlFor="achievementDate">Achievement Date</Label>
-            <Input
-              id="achievementDate"
-              type="date"
-              required
-              value={formData.achievementDate}
-              onChange={(e) => setFormData({ ...formData, achievementDate: e.target.value })}
-            />
-          </div>
-
-          <div className="grid gap-2">
-            <Label htmlFor="proofFile">Proof Document (Optional)</Label>
-            <Input
-              id="proofFile"
-              type="file"
-              accept=".pdf,.jpg,.jpeg,.png"
-              onChange={(e) => setFormData({ ...formData, proofFile: e.target.files?.[0] || null })}
-            />
-            <p className="text-sm text-muted-foreground">Upload certificates, photos, or other proof documents</p>
-          </div>
-
-          {error && <p className="text-sm text-destructive">{error}</p>}
+          {error && <p className="text-destructive text-sm">{error}</p>}
 
           <Button type="submit" disabled={isLoading} className="w-full">
-            {isLoading ? "Submitting..." : "Submit Achievement"}
+            {isLoading ? "Evaluating..." : "Submit & Get Points"}
           </Button>
         </form>
       </CardContent>
