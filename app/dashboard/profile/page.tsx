@@ -1,8 +1,8 @@
 import { createClient } from "@/lib/supabase/server"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
-import { Button } from "@/components/ui/button" // Make sure you have this
-import Link from "next/link" // Import Link
+import { Button } from "@/components/ui/button"
+import Link from "next/link"
 import { redirect } from "next/navigation"
 
 export default async function ProfilePage() {
@@ -16,7 +16,6 @@ export default async function ProfilePage() {
 
   const { data: profile } = await supabase.from("profiles").select("*").eq("id", user.id).single()
 
-  // If profile row is completely missing (shouldn't happen due to trigger, but just in case)
   if (!profile) {
     return (
       <div className="p-6">
@@ -26,8 +25,8 @@ export default async function ProfilePage() {
     )
   }
 
-  // Check if critical fields are missing
-  const isProfileIncomplete = !profile.student_id || !profile.department
+  // UPDATED: Check for Course and Stream instead of Department
+  const isProfileIncomplete = !profile.student_id || !profile.course_name || !profile.stream
 
   return (
     <div className="space-y-6">
@@ -42,11 +41,10 @@ export default async function ProfilePage() {
           <CardHeader>
             <CardTitle className="text-red-700 dark:text-red-400">Action Required</CardTitle>
             <CardDescription className="text-red-600 dark:text-red-300">
-              Your profile is incomplete. You must update your Student ID and Department before submitting achievements.
+              Your profile is incomplete. You must update your Student ID, Course, and Stream before submitting achievements.
             </CardDescription>
           </CardHeader>
           <CardContent>
-            {/* Create a file at app/dashboard/profile/edit/page.tsx for this link to work */}
             <Button asChild>
               <Link href="/dashboard/profile/edit">Complete My Profile Now</Link>
             </Button>
@@ -86,19 +84,19 @@ export default async function ProfilePage() {
               <p className="text-sm font-medium">{profile.student_id || "N/A"}</p>
             </div>
             <div className="space-y-2">
-              <Label>Department</Label>
-              <p className="text-sm font-medium">{profile.department || "N/A"}</p>
+              <Label>Course</Label> {/* Changed from Department */}
+              <p className="text-sm font-medium">{profile.course_name || "N/A"}</p>
             </div>
           </div>
 
           <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-2">
-              <Label>Year of Study</Label>
-              <p className="text-sm font-medium">{profile.year_of_study ? `Year ${profile.year_of_study}` : "N/A"}</p>
+              <Label>Stream</Label>
+              <p className="text-sm font-medium capitalize">{profile.stream || "N/A"}</p>
             </div>
             <div className="space-y-2">
-              <Label>Phone</Label>
-              <p className="text-sm font-medium">{profile.phone || "N/A"}</p>
+              <Label>Year of Study</Label>
+              <p className="text-sm font-medium">{profile.year_of_study ? `Year ${profile.year_of_study}` : "N/A"}</p>
             </div>
           </div>
 

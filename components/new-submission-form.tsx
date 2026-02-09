@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea"
 import { createClient } from "@/lib/supabase/client"
 import { useRouter } from "next/navigation"
-import { Trash2, Plus } from "lucide-react"
+import { Trash2, Plus, GraduationCap, User } from "lucide-react"
 
 // Standard Activity Points
 const ACTIVITY_POINTS = {
@@ -24,7 +24,7 @@ const ACTIVITY_POINTS = {
 const INDUSTRY_POINTS = {
   international: 2.0,
   national: 1.5,
-  local: 1.0, // University / Local level
+  local: 1.0,
 }
 
 export function NewSubmissionForm() {
@@ -42,29 +42,33 @@ export function NewSubmissionForm() {
   const [date, setDate] = useState("")
   const [proofFile, setProofFile] = useState<File | null>(null)
   
-  // UPDATED: Changed to Year-wise CGPA State
   const [cgpaList, setCgpaList] = useState([{ year: 1, cgpa: "" }])
-
-  // User Data & Limits
+  
+  // User Profile State (Fetched from Signup)
   const [userStream, setUserStream] = useState<"humanities" | "science">("humanities")
+  const [userCourse, setUserCourse] = useState<string>("")
   const [existingPoints, setExistingPoints] = useState<Record<string, number>>({})
   
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  // Fetch Data on Load
+  // Fetch User Profile Data (Stream and Course) on Load
   useEffect(() => {
     const initData = async () => {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) return
 
+      // Fetch Stream and Course from 'profiles' table (stored at Signup)
       const { data: profile } = await supabase
         .from("profiles")
-        .select("stream")
+        .select("stream, course_name")
         .eq("id", user.id)
         .single()
-      if (profile?.stream) setUserStream(profile.stream)
+      
+      if (profile?.stream) setUserStream(profile.stream as "humanities" | "science")
+      if (profile?.course_name) setUserCourse(profile.course_name)
 
+      // Fetch Existing Points for Validation
       const { data: submissions } = await supabase
         .from("submissions")
         .select("category, points_awarded")
@@ -81,6 +85,7 @@ export function NewSubmissionForm() {
   }, [supabase])
 
   // UPDATED: Calculate CGPA Points based on LAST (Highest Year) CGPA
+  // Uses the userStream fetched from the database
   const calculateCgpaPoints = (yearlyCgpas: { year: number, cgpa: string }[]): number => {
     const validEntries = yearlyCgpas
       .filter(y => y.cgpa !== "")
@@ -89,21 +94,23 @@ export function NewSubmissionForm() {
 
     if (validEntries.length === 0) return 0
 
-    // Find the entry with the highest year number (The "Last" CGPA)
+    // Find the entry with the highest year number (The "Last" CGPA entered by student)
     const lastEntry = validEntries.reduce((prev, current) => {
       return (prev.year > current.year) ? prev : current
     })
 
     const lastCgpa = parseFloat(lastEntry.cgpa.toFixed(2))
 
-    // Apply Rules based on Stream
+    // Apply Rules based on Fetched Stream (from Signup)
     if (userStream === "humanities") {
+      // Humanities/Commerce Rules
       if (lastCgpa >= 8.0) return 5
       if (lastCgpa >= 7.5) return 4
       if (lastCgpa >= 7.0) return 3
       if (lastCgpa >= 6.5) return 2
       if (lastCgpa >= 6.0) return 1
     } else {
+      // Science Rules
       if (lastCgpa >= 9.0) return 5
       if (lastCgpa >= 8.5) return 4
       if (lastCgpa >= 8.0) return 3
@@ -140,7 +147,7 @@ export function NewSubmissionForm() {
       let finalTitle = title
       let finalDate = date
 
-      // 1. ACADEMIC (CGPA) - SIMPLIFIED MODE
+      // 1. ACADEMIC (CGPA)
       if (category === "academic" && academicType === "cgpa") {
         const validCgpas = cgpaList.filter(c => c.cgpa !== "").map(c => parseFloat(c.cgpa)).filter(n => !isNaN(n))
         if (validCgpas.length === 0) throw new Error("Please enter at least one valid CGPA")
@@ -148,9 +155,9 @@ export function NewSubmissionForm() {
         pointsToAward = calculateCgpaPoints(cgpaList)
         
         // Auto-generate Title, Description, and Date for CGPA mode
-        finalTitle = "Academic CGPA Performance"
-        details = `Year-wise CGPA: ${cgpaList.map(c => `Year ${c.year}: ${c.cgpa || '-'}`).join(", ")}.`
-        // Set date to today for CGPA records since it's a current status report
+        finalTitle = `Academic CGPA Performance - ${userCourse}`
+        details = `Course: ${userCourse}. Stream: ${userStream.toUpperCase()}. Year-wise CGPA: ${cgpaList.map(c => `Year ${c.year}: ${c.cgpa || '-'}`).join(", ")}.`
+        // Set date to today for CGPA records
         finalDate = new Date().toISOString().split('T')[0]
         
         finalCategory = "Academic (CGPA)"
@@ -231,6 +238,20 @@ export function NewSubmissionForm() {
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-6">
           
+          {/* READ ONLY: Profile Info (Course & Stream from Signup) */}
+          <div className="bg-slate-50 border p-4 rounded-md flex flex-col sm:flex-row gap-4 text-sm">
+            <div className="flex items-center gap-2">
+              <GraduationCap className="h-4 w-4 text-slate-500" />
+              <span className="font-semibold">Course:</span>
+              <span>{userCourse || "Loading..."}</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <User className="h-4 w-4 text-slate-500" />
+              <span className="font-semibold">Stream Logic:</span>
+              <span className="capitalize text-primary">{userStream}</span>
+            </div>
+          </div>
+          
           {/* CATEGORY SELECTOR */}
           <div className="grid gap-2">
             <Label>Category</Label>
@@ -282,57 +303,58 @@ export function NewSubmissionForm() {
             </>
           )}
 
-          {/* UPDATED: YEAR-WISE CGPA INPUTS */}
-{category === "academic" && academicType === "cgpa" && (
-  <div className="space-y-2 border p-4 rounded bg-slate-50">
-    <Label>Enter CGPA Year-wise (Based on 2 Semesters)</Label>
-    <p className="text-xs text-muted-foreground">Stream: {userStream.toUpperCase()} • Points calculated based on last (highest) year CGPA.</p>
-    
-    {cgpaList.map((item, idx) => (
-      <div key={idx} className="flex gap-2 items-center">
-        {/* CHANGED: value={idx + 1} */}
-        <Input 
-          type="number" 
-          placeholder="Year" 
-          value={idx + 1} 
-          disabled 
-          className="w-20" 
-        />
-        <Input 
-          type="number" 
-          step="0.01" 
-          placeholder="CGPA (e.g. 8.5)" 
-          value={item.cgpa} 
-          onChange={(e) => {
-            const list = [...cgpaList]; 
-            list[idx].cgpa = e.target.value; 
-            setCgpaList(list);
-          }} 
-        />
-        {cgpaList.length > 1 && (
-          <Button type="button" variant="ghost" size="icon" onClick={() => setCgpaList(cgpaList.filter((_, i) => i !== idx))}>
-            <Trash2 className="h-4 w-4" />
-          </Button>
-        )}
-      </div>
-    ))}
-    
-    {/* CHANGED: Added disabled={cgpaList.length >= 4} */}
-    <Button 
-      type="button" 
-      variant="outline" 
-      size="sm" 
-      disabled={cgpaList.length >= 4}
-      onClick={() => {
-        if (cgpaList.length < 4) {
-          setCgpaList([...cgpaList, { year: cgpaList.length + 1, cgpa: "" }]);
-        }
-      }}
-    >
-      <Plus className="h-4 w-4 mr-2" /> Add Year
-    </Button>
-  </div>
-)}
+          {/* YEAR-WISE CGPA INPUTS */}
+          {category === "academic" && academicType === "cgpa" && (
+            <div className="space-y-2 border p-4 rounded bg-slate-50">
+              <Label>Enter CGPA Year-wise</Label>
+              <p className="text-xs text-muted-foreground">
+                Using <b>{userStream === "humanities" ? "Humanities/Commerce" : "Science"}</b> criteria. 
+                Points calculated based on <b>last (highest) year</b> CGPA.
+              </p>
+              
+              {cgpaList.map((item, idx) => (
+                <div key={idx} className="flex gap-2 items-center">
+                  <Input 
+                    type="number" 
+                    placeholder="Year" 
+                    value={idx + 1} 
+                    disabled 
+                    className="w-20" 
+                  />
+                  <Input 
+                    type="number" 
+                    step="0.01" 
+                    placeholder="CGPA (e.g. 8.5)" 
+                    value={item.cgpa} 
+                    onChange={(e) => {
+                      const list = [...cgpaList]; 
+                      list[idx].cgpa = e.target.value; 
+                      setCgpaList(list);
+                    }} 
+                  />
+                  {cgpaList.length > 1 && (
+                    <Button type="button" variant="ghost" size="icon" onClick={() => setCgpaList(cgpaList.filter((_, i) => i !== idx))}>
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  )}
+                </div>
+              ))}
+              
+              <Button 
+                type="button" 
+                variant="outline" 
+                size="sm" 
+                disabled={cgpaList.length >= 4}
+                onClick={() => {
+                  if (cgpaList.length < 4) {
+                    setCgpaList([...cgpaList, { year: cgpaList.length + 1, cgpa: "" }]);
+                  }
+                }}
+              >
+                <Plus className="h-4 w-4 mr-2" /> Add Year
+              </Button>
+            </div>
+          )}
 
           {/* INDUSTRY EXPERIENCE SPECIFIC INPUTS */}
           {category === "industry" && (

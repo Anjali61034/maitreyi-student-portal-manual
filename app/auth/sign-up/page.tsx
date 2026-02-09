@@ -1,7 +1,6 @@
 "use client"
 
 import type React from "react"
-
 import { createClient } from "@/lib/supabase/client"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -12,6 +11,28 @@ import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
 
+// Course List extracted from the image
+const COURSE_LIST = [
+  "B.A.(H) Economics",
+  "B.A.(H) English",
+  "B.A.(H) History",
+  "B.A.(H) Political Science",
+  "B.A.(H) Sanskrit",
+  "B.A.(H) Philosophy",
+  "B.A.(H) Hindi",
+  "B.A. Programme (Multidisciplinary)",
+  "B.Com (Programme)",
+  "B.Com (Honours)",
+  "B.Sc. Life Sciences",
+  "B.Sc. Physical Sciences",
+  "B.Sc. Mathematical Sciences",
+  "B.Sc. Chemistry (H)",
+  "B.Sc. Electronics",
+  "B.Sc. Computer Science (H)",
+  "B.Sc. Botany (H)",
+  "B.Sc. Zoology (H)"
+]
+
 export default function SignUpPage() {
   const [formData, setFormData] = useState({
     email: "",
@@ -20,8 +41,8 @@ export default function SignUpPage() {
     fullName: "",
     role: "student",
     studentId: "",
-    department: "",
-    stream: "", // ADDED: Initialize stream state
+    courseName: "", // ADDED: Course selection
+    stream: "", 
     yearOfStudy: "",
     phone: "",
   })
@@ -57,8 +78,9 @@ export default function SignUpPage() {
             full_name: formData.fullName,
             role: formData.role,
             student_id: formData.studentId || null,
-            department: formData.department || null,
-            stream: formData.stream || null, // ADDED: Save stream to profile
+            // REMOVED: department
+            course_name: formData.courseName || null, // ADDED: Save Course
+            stream: formData.stream || null, // ADDED: Save Stream (Humanities/Science)
             year_of_study: formData.yearOfStudy ? Number.parseInt(formData.yearOfStudy) : null,
             phone: formData.phone || null,
           },
@@ -154,7 +176,7 @@ export default function SignUpPage() {
                   <>
                     <div className="grid gap-4 md:grid-cols-2">
                       <div className="grid gap-2">
-                        <Label htmlFor="studentId">Student ID</Label>
+                        <Label htmlFor="studentId">Roll No.</Label>
                         <Input
                           id="studentId"
                           type="text"
@@ -169,25 +191,28 @@ export default function SignUpPage() {
                           }
                         />
                       </div>
+                      
+                      {/* ADDED: Course Dropdown replacing Department */}
                       <div className="grid gap-2">
-                        <Label htmlFor="department">Department</Label>
-                        <Input
-                          id="department"
-                          type="text"
-                          placeholder="Computer Science"
-                          value={formData.department}
-                          onChange={(e) =>
-                            setFormData({
-                              ...formData,
-                              department: e.target.value,
-                            })
-                          }
-                        />
+                        <Label htmlFor="courseName">Course</Label>
+                        <Select 
+                           value={formData.courseName} 
+                           onValueChange={(value) => setFormData({ ...formData, courseName: value })}
+                        >
+                          <SelectTrigger id="courseName">
+                            <SelectValue placeholder="Select Course" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {COURSE_LIST.map((course) => (
+                              <SelectItem key={course} value={course}>{course}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
                       </div>
                     </div>
 
                     <div className="grid gap-2">
-                      <Label htmlFor="stream">Stream (Important for CGPA Calculation)</Label>
+                      <Label htmlFor="stream">Stream </Label>
                       <Select
                         value={formData.stream}
                         onValueChange={(value) => setFormData({ ...formData, stream: value })}
@@ -196,8 +221,8 @@ export default function SignUpPage() {
                           <SelectValue placeholder="Select stream" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="humanities">Humanities</SelectItem>
-                          <SelectItem value="science">Science / Commerce</SelectItem>
+                          <SelectItem value="humanities">Humanities / Commerce</SelectItem>
+                          <SelectItem value="science">Science</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
@@ -219,16 +244,6 @@ export default function SignUpPage() {
                             <SelectItem value="4">Fourth Year</SelectItem>
                           </SelectContent>
                         </Select>
-                      </div>
-                      <div className="grid gap-2">
-                        <Label htmlFor="phone">Phone Number</Label>
-                        <Input
-                          id="phone"
-                          type="tel"
-                          placeholder="+1234567890"
-                          value={formData.phone}
-                          onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                        />
                       </div>
                     </div>
                   </>

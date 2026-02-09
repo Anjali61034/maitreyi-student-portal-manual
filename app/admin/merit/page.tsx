@@ -1,30 +1,108 @@
+"use client"
+
+import React, { useState, useEffect } from "react"
 import { MeritEvaluationForm } from "@/components/merit-evaluation-form"
-import { createClient } from "@/lib/supabase/server"
+import { createClient } from "@/lib/supabase/client"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
-export default async function AdminMeritPage() {
-  const supabase = await createClient()
+export default function AdminMeritPage() {
+  const supabase = createClient()
+  
+  // State for Filters
+  const [streamFilter, setStreamFilter] = useState<string>("all")
+  const [yearFilter, setYearFilter] = useState<string>("all")
+  
+  // State for available options (Dynamic Dropdowns)
+  const [availableYears, setAvailableYears] = useState<string[]>(["1", "2", "3", "4"]) // Hardcoded as requested
+  
+  // State for Recent Evaluations
+  const [recentEvaluations, setRecentEvaluations] = useState<any[]>([])
 
-  // Get recent merit evaluations
-  const { data: recentEvaluations } = await supabase
-    .from("merit_evaluations")
-    .select("*, profiles(full_name, student_id)")
-    .order("evaluation_date", { ascending: false })
-    .limit(20)
+  // Fetch Years (removed dynamic fetch as we hardcoded above)
+  // Fetch Recent Evaluations
+  useEffect(() => {
+    fetchRecentEvaluations()
+  }, [])
+
+  const fetchRecentEvaluations = async () => {
+    // 1. First, find the LATEST evaluation date in the table
+    const { data: latestDateData } = await supabase
+      .from("merit_evaluations")
+      .select("evaluation_date")
+      .order("evaluation_date", { ascending: false })
+      .limit(1)
+      .single()
+
+    if (latestDateData?.evaluation_date) {
+      // 2. Fetch ONLY the records matching that specific date
+      const { data } = await supabase
+        .from("merit_evaluations")
+        .select("*, profiles(full_name, student_id)")
+        .eq("evaluation_date", latestDateData.evaluation_date)
+        .order("rank", { ascending: true }) // Sort by rank 1, 2, 3...
+      
+      setRecentEvaluations(data || [])
+    } else {
+      setRecentEvaluations([])
+    }
+  }
 
   return (
     <div className="space-y-6">
+      {/* Header with Filters */}
       <div>
-        <h1 className="text-3xl font-bold">Merit Evaluation</h1>
-        <p className="text-muted-foreground">Generate merit rankings for students</p>
+        <h1 className="text-3xl font-bold mb-1">Merit Evaluation</h1>
+        <p className="text-muted-foreground mb-6">Generate merit rankings for students</p>
+        
+        <div className="flex flex-wrap items-end gap-4 bg-slate-50 p-4 rounded-lg border">
+          
+          {/* Stream Filter */}
+          <div className="w-full md:w-64">
+            <label className="text-sm font-medium mb-1 block">Stream</label>
+            <Select value={streamFilter} onValueChange={setStreamFilter}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select Stream" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Streams</SelectItem>
+                <SelectItem value="humanities">Humanities / Commerce</SelectItem>
+                <SelectItem value="science">Science</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Hardcoded Year Filter */}
+          <div className="w-full md:w-48">
+            <label className="text-sm font-medium mb-1 block">Year of Study</label>
+            <Select value={yearFilter} onValueChange={setYearFilter}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select Year" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Years</SelectItem>
+                {availableYears.map((year) => (
+                  <SelectItem key={year} value={year}>
+                    Year {year}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
       </div>
 
-      <MeritEvaluationForm />
+      {/* Pass both filters to the form */}
+      <MeritEvaluationForm 
+        streamFilter={streamFilter}
+        yearFilter={yearFilter}
+        onEvaluationGenerated={fetchRecentEvaluations} 
+      />
 
       <Card>
         <CardHeader>
-          <CardTitle>Recent Evaluations</CardTitle>
-          <CardDescription>Latest merit evaluations generated</CardDescription>
+          <CardTitle>Latest Generated List</CardTitle>
+          <CardDescription>Showing the most recent merit evaluation batch</CardDescription>
         </CardHeader>
         <CardContent>
           {recentEvaluations && recentEvaluations.length > 0 ? (
@@ -32,10 +110,9 @@ export default async function AdminMeritPage() {
               {recentEvaluations.map((evaluation: any) => (
                 <div key={evaluation.id} className="flex items-center justify-between border-b pb-3 last:border-0">
                   <div>
-                    <p className="font-medium">{evaluation.profiles.full_name}</p>
+                    <p className="font-medium">{evaluation.profiles?.full_name}</p>
                     <p className="text-sm text-muted-foreground">
-                      {evaluation.profiles.student_id} • {evaluation.academic_year}
-                      {/* Removed semester display */}
+                      {evaluation.profiles?.student_id} • {evaluation.academic_year}
                     </p>
                   </div>
                   <div className="text-right">

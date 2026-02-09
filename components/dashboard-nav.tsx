@@ -31,7 +31,7 @@ export function DashboardNav({ profile, isOpen }: DashboardNavProps) {
     { href: "/dashboard", label: "Dashboard", icon: Home },
     { href: "/dashboard/submissions", label: "My Submissions", icon: FileText },
     { href: "/dashboard/new-submission", label: "New Submission", icon: Award },
-    { href: "/dashboard/merit", label: "Merit Ranking", icon: Trophy },
+    { href: "/dashboard/achievements", label: "Achievements Info", icon: Trophy },
     { href: "/dashboard/profile", label: "Profile", icon: User },
   ]
 
