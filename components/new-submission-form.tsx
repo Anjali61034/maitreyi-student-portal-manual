@@ -7,9 +7,10 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
+import { FileText } from "lucide-react";
 import { createClient } from "@/lib/supabase/client"
 import { useRouter } from "next/navigation"
-import { Trash2, Plus, GraduationCap, User } from "lucide-react"
+import { Trash2, Plus, GraduationCap, User, Globe, Calculator } from "lucide-react"
 
 // Standard Activity Points
 const ACTIVITY_POINTS = {
@@ -33,18 +34,18 @@ export function NewSubmissionForm() {
 
   // Form State
   const [category, setCategory] = useState<string>("") 
-  const [academicType, setAcademicType] = useState<string>("cgpa") 
   const [activityType, setActivityType] = useState<string>("participation")
   const [industryLevel, setIndustryLevel] = useState<string>("local")
+  const [achievementRank, setAchievementRank] = useState<string>("")
   
   const [title, setTitle] = useState("")
   const [description, setDescription] = useState("")
   const [date, setDate] = useState("")
   const [proofFile, setProofFile] = useState<File | null>(null)
   
-  const [cgpaList, setCgpaList] = useState([{ year: 1, cgpa: "" }])
+  const [sgpaList, setSgpaList] = useState([{ sem: 1, sgpa: "" }])
   
-  // User Profile State (Fetched from Signup)
+  // User Profile State
   const [userStream, setUserStream] = useState<"humanities" | "science">("humanities")
   const [userCourse, setUserCourse] = useState<string>("")
   const [existingPoints, setExistingPoints] = useState<Record<string, number>>({})
@@ -52,13 +53,12 @@ export function NewSubmissionForm() {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  // Fetch User Profile Data (Stream and Course) on Load
+  // Fetch User Profile Data
   useEffect(() => {
     const initData = async () => {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) return
 
-      // Fetch Stream and Course from 'profiles' table (stored at Signup)
       const { data: profile } = await supabase
         .from("profiles")
         .select("stream, course_name")
@@ -68,7 +68,6 @@ export function NewSubmissionForm() {
       if (profile?.stream) setUserStream(profile.stream as "humanities" | "science")
       if (profile?.course_name) setUserCourse(profile.course_name)
 
-      // Fetch Existing Points for Validation
       const { data: submissions } = await supabase
         .from("submissions")
         .select("category, points_awarded")
@@ -84,38 +83,31 @@ export function NewSubmissionForm() {
     initData()
   }, [supabase])
 
-  // UPDATED: Calculate CGPA Points based on LAST (Highest Year) CGPA
-  // Uses the userStream fetched from the database
-  const calculateCgpaPoints = (yearlyCgpas: { year: number, cgpa: string }[]): number => {
-    const validEntries = yearlyCgpas
-      .filter(y => y.cgpa !== "")
-      .map(y => ({ year: y.year, cgpa: parseFloat(y.cgpa) }))
-      .filter(y => !isNaN(y.cgpa))
+  // --- EVALUATION LOGIC: SGPA Average Calculation ---
+  const calculateSgpaPoints = (sgpas: { sem: number, sgpa: string }[]): number => {
+    const validEntries = sgpas
+      .filter(y => y.sgpa !== "")
+      .map(y => parseFloat(y.sgpa))
+      .filter(n => !isNaN(n))
 
     if (validEntries.length === 0) return 0
 
-    // Find the entry with the highest year number (The "Last" CGPA entered by student)
-    const lastEntry = validEntries.reduce((prev, current) => {
-      return (prev.year > current.year) ? prev : current
-    })
+    const sum = validEntries.reduce((a, b) => a + b, 0)
+    const averageSgpa = sum / validEntries.length
+    const finalAvg = parseFloat(averageSgpa.toFixed(2))
 
-    const lastCgpa = parseFloat(lastEntry.cgpa.toFixed(2))
-
-    // Apply Rules based on Fetched Stream (from Signup)
     if (userStream === "humanities") {
-      // Humanities/Commerce Rules
-      if (lastCgpa >= 8.0) return 5
-      if (lastCgpa >= 7.5) return 4
-      if (lastCgpa >= 7.0) return 3
-      if (lastCgpa >= 6.5) return 2
-      if (lastCgpa >= 6.0) return 1
+      if (finalAvg >= 8.0) return 5
+      if (finalAvg >= 7.5) return 4
+      if (finalAvg >= 7.0) return 3
+      if (finalAvg >= 6.5) return 2
+      if (finalAvg >= 6.0) return 1
     } else {
-      // Science Rules
-      if (lastCgpa >= 9.0) return 5
-      if (lastCgpa >= 8.5) return 4
-      if (lastCgpa >= 8.0) return 3
-      if (lastCgpa >= 7.5) return 2
-      if (lastCgpa >= 7.0) return 1
+      if (finalAvg >= 9.0) return 5
+      if (finalAvg >= 8.5) return 4
+      if (finalAvg >= 8.0) return 3
+      if (finalAvg >= 7.5) return 2
+      if (finalAvg >= 7.0) return 1
     }
     return 0
   }
@@ -129,15 +121,14 @@ export function NewSubmissionForm() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) throw new Error("Not authenticated")
 
-      // If NOT CGPA mode, validate Date input normally
-      if (category !== "academic" || academicType !== "cgpa") {
+      if (category !== "cgpa_evaluation") {
         const selectedDate = new Date(date)
-        const academicStart = new Date("2024-04-01")
-        const academicEnd = new Date("2025-03-31")
+        const academicStart = new Date("2024-01-01")
+        const academicEnd = new Date("2025-12-31")
         
         if (!date || isNaN(selectedDate.getTime())) throw new Error("Please select a valid date.")
         if (selectedDate < academicStart || selectedDate > academicEnd) {
-          throw new Error("Invalid date. Achievement must be within the 2024-2025 Academic Year (April 2024 - March 2025).")
+          throw new Error("Invalid date. Achievement must be within the 2024-2025 Academic Year (January 2024 - December 2025).")
         }
       }
 
@@ -146,21 +137,26 @@ export function NewSubmissionForm() {
       let details = description
       let finalTitle = title
       let finalDate = date
+      let finalSgpaValue = 0 // NEW: Variable to hold the calculated CGPA number
 
-      // 1. ACADEMIC (CGPA)
-      if (category === "academic" && academicType === "cgpa") {
-        const validCgpas = cgpaList.filter(c => c.cgpa !== "").map(c => parseFloat(c.cgpa)).filter(n => !isNaN(n))
-        if (validCgpas.length === 0) throw new Error("Please enter at least one valid CGPA")
+      // 1. CGPA EVALUATION
+      if (category === "cgpa_evaluation") {
+        const validSgpas = sgpaList.filter(c => c.sgpa !== "").map(c => parseFloat(c.sgpa)).filter(n => !isNaN(n))
+        if (validSgpas.length === 0) throw new Error("Please enter at least one valid SGPA")
         
-        pointsToAward = calculateCgpaPoints(cgpaList)
+        pointsToAward = calculateSgpaPoints(sgpaList)
         
-        // Auto-generate Title, Description, and Date for CGPA mode
-        finalTitle = `Academic CGPA Performance - ${userCourse}`
-        details = `Course: ${userCourse}. Stream: ${userStream.toUpperCase()}. Year-wise CGPA: ${cgpaList.map(c => `Year ${c.year}: ${c.cgpa || '-'}`).join(", ")}.`
-        // Set date to today for CGPA records
+        // --- NEW: Calculate the actual CGPA Number to store ---
+        const sum = validSgpas.reduce((a, b) => a + b, 0)
+        const averageSgpa = sum / validSgpas.length
+        finalSgpaValue = parseFloat(averageSgpa.toFixed(2))
+        // -----------------------------------------------------
+
+        finalTitle = `CGPA Performance Evaluation - ${userCourse}`
+        const semDetails = sgpaList.map(s => `Sem ${s.sem}: ${s.sgpa || '-'}`).join(", ")
+        details = `Course: ${userCourse}. Stream: ${userStream.toUpperCase()}. ${semDetails}.`
         finalDate = new Date().toISOString().split('T')[0]
-        
-        finalCategory = "Academic (CGPA)"
+        finalCategory = "CGPA Evaluation"
       } 
       // 2. INDUSTRY EXPERIENCE
       else if (category === "industry") {
@@ -172,7 +168,7 @@ export function NewSubmissionForm() {
         const typeKey = activityType as keyof typeof ACTIVITY_POINTS
         pointsToAward = ACTIVITY_POINTS[typeKey] || 0
 
-        if (category === "academic") finalCategory = "Academic Engagement"
+        if (category === "academic_research") finalCategory = "Academic Research"
         else if (category === "extra_curricular") finalCategory = "Extra Curricular"
         else if (category === "outreach") finalCategory = "Outreach"
         else if (category === "sports") finalCategory = "Sports"
@@ -204,6 +200,16 @@ export function NewSubmissionForm() {
         proofFileName = proofFile.name
       }
 
+      // --- DETERMINE ACTIVITY TYPE TO SAVE ---
+      let activityTypeToSave = ""
+      if (category === "cgpa_evaluation") {
+          activityTypeToSave = "sgpa_performance"
+      } else if (category === "industry") {
+          activityTypeToSave = industryLevel 
+      } else {
+          activityTypeToSave = activityType 
+      }
+
       // INSERT TO DATABASE
       const { error: insertError } = await supabase.from("submissions").insert({
         student_id: user.id,
@@ -215,6 +221,10 @@ export function NewSubmissionForm() {
         proof_file_name: proofFileName,
         points_awarded: pointsToAward,
         status: "approved",
+        achievement_scope: achievementRank || null, 
+        activity_type: activityTypeToSave, 
+        // NEW: Save the calculated CGPA number here
+        cgpa_value: category === "cgpa_evaluation" ? finalSgpaValue : null, 
       })
 
       if (insertError) throw insertError
@@ -238,7 +248,7 @@ export function NewSubmissionForm() {
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-6">
           
-          {/* READ ONLY: Profile Info (Course & Stream from Signup) */}
+          {/* READ ONLY: Profile Info */}
           <div className="bg-slate-50 border p-4 rounded-md flex flex-col sm:flex-row gap-4 text-sm">
             <div className="flex items-center gap-2">
               <GraduationCap className="h-4 w-4 text-slate-500" />
@@ -251,14 +261,28 @@ export function NewSubmissionForm() {
               <span className="capitalize text-primary">{userStream}</span>
             </div>
           </div>
+
+           <div className="bg-slate-50 border p-4 rounded-md flex flex-col sm:flex-row gap-4 text-sm">
+  <div className="flex items-center gap-2">
+    <FileText className="h-4 w-4 text-slate-500" />
+    <span className="font-semibold">PLEASE UPLOAD YOUR BEST CERTIFICATES</span>
+  </div>
+</div>
+
           
           {/* CATEGORY SELECTOR */}
           <div className="grid gap-2">
             <Label>Category</Label>
-            <Select value={category} onValueChange={setCategory}>
+            <Select value={category} onValueChange={(val) => {
+                setCategory(val)
+                setAchievementRank("") 
+                setActivityType("participation")
+                setSgpaList([{ sem: 1, sgpa: "" }])
+            }}>
               <SelectTrigger><SelectValue placeholder="Select Category" /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="academic">Academic</SelectItem>
+                <SelectItem value="cgpa_evaluation">CGPA Evaluation (SGPA)</SelectItem>
+                <SelectItem value="academic_research">Academic Engagement and Research</SelectItem>
                 <SelectItem value="extra_curricular">Extra-Curricular</SelectItem>
                 <SelectItem value="outreach">Outreach Activities</SelectItem>
                 <SelectItem value="sports">Sports</SelectItem>
@@ -268,22 +292,8 @@ export function NewSubmissionForm() {
             </Select>
           </div>
 
-          {/* ACADEMIC SUB-TYPE */}
-          {category === "academic" && (
-            <div className="grid gap-2">
-              <Label>Academic Sub-Type</Label>
-              <Select value={academicType} onValueChange={setAcademicType}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="cgpa">CGPA Calculation</SelectItem>
-                  <SelectItem value="engagement">Research / Engagement</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          )}
-
           {/* CONDITIONAL: HIDE TITLE, DETAILS, DATE IF CGPA MODE */}
-          {!(category === "academic" && academicType === "cgpa") && (
+          {category !== "cgpa_evaluation" && (
             <>
               <div className="grid gap-2">
                 <Label htmlFor="title">Title</Label>
@@ -292,48 +302,51 @@ export function NewSubmissionForm() {
 
               <div className="grid gap-2">
                 <Label htmlFor="description">Details</Label>
-                <Textarea id="description" value={description} onChange={e => setDescription(e.target.value)} placeholder="More details..." />
+                <Textarea id="description" value={description} onChange={e => setDescription(e.target.value)} required placeholder="More details..." />
               </div>
 
               <div className="grid gap-2">
                 <Label htmlFor="date">Date</Label>
-                <Input id="date" type="date" value={date} onChange={e => setDate(e.target.value)} required min="2024-04-01" max="2025-03-31" />
-                <p className="text-xs text-muted-foreground">Must be between April 2024 - March 2025</p>
+                <Input id="date" type="date" value={date} onChange={e => setDate(e.target.value)} required min="2024-01-01" max="2025-12-31" />
+                <p className="text-xs text-muted-foreground">Must be between January 2024 - December 2025</p>
               </div>
             </>
           )}
 
-          {/* YEAR-WISE CGPA INPUTS */}
-          {category === "academic" && academicType === "cgpa" && (
+          {/* 1. CGPA EVALUATION INPUTS */}
+          {category === "cgpa_evaluation" && (
             <div className="space-y-2 border p-4 rounded bg-slate-50">
-              <Label>Enter CGPA Year-wise</Label>
+              <div className="flex items-center gap-2 text-blue-600">
+                <Calculator className="h-4 w-4" />
+                <Label className="font-semibold">Enter SGPA (Last 2 Semesters)</Label>
+              </div>
               <p className="text-xs text-muted-foreground">
-                Using <b>{userStream === "humanities" ? "Humanities/Commerce" : "Science"}</b> criteria. 
-                Points calculated based on <b>last (highest) year</b> CGPA.
+                Points calculated based on <b>Average</b> of entered SGPAs.<br />
+                Using <b>{userStream === "humanities" ? "Humanities/Commerce" : "Science"}</b> criteria.
               </p>
               
-              {cgpaList.map((item, idx) => (
+              {sgpaList.map((item, idx) => (
                 <div key={idx} className="flex gap-2 items-center">
                   <Input 
                     type="number" 
-                    placeholder="Year" 
-                    value={idx + 1} 
+                    placeholder="Sem" 
+                    value={item.sem}
                     disabled 
                     className="w-20" 
                   />
                   <Input 
                     type="number" 
                     step="0.01" 
-                    placeholder="CGPA (e.g. 8.5)" 
-                    value={item.cgpa} 
+                    placeholder="SGPA (e.g. 8.5)" 
+                    value={item.sgpa} 
                     onChange={(e) => {
-                      const list = [...cgpaList]; 
-                      list[idx].cgpa = e.target.value; 
-                      setCgpaList(list);
+                      const list = [...sgpaList]; 
+                      list[idx].sgpa = e.target.value; 
+                      setSgpaList(list);
                     }} 
                   />
-                  {cgpaList.length > 1 && (
-                    <Button type="button" variant="ghost" size="icon" onClick={() => setCgpaList(cgpaList.filter((_, i) => i !== idx))}>
+                  {sgpaList.length > 1 && (
+                    <Button type="button" variant="ghost" size="icon" onClick={() => setSgpaList(sgpaList.filter((_, i) => i !== idx))}>
                       <Trash2 className="h-4 w-4" />
                     </Button>
                   )}
@@ -344,19 +357,19 @@ export function NewSubmissionForm() {
                 type="button" 
                 variant="outline" 
                 size="sm" 
-                disabled={cgpaList.length >= 4}
+                disabled={sgpaList.length >= 2}
                 onClick={() => {
-                  if (cgpaList.length < 4) {
-                    setCgpaList([...cgpaList, { year: cgpaList.length + 1, cgpa: "" }]);
+                  if (sgpaList.length < 2) {
+                    setSgpaList([...sgpaList, { sem: sgpaList.length + 1, sgpa: "" }]);
                   }
                 }}
               >
-                <Plus className="h-4 w-4 mr-2" /> Add Year
+                <Plus className="h-4 w-4 mr-2" /> Add Semester (Max 2)
               </Button>
             </div>
           )}
 
-          {/* INDUSTRY EXPERIENCE SPECIFIC INPUTS */}
+          {/* 2. INDUSTRY EXPERIENCE INPUTS */}
           {category === "industry" && (
             <div className="grid gap-2">
               <Label>Experience Level</Label>
@@ -371,28 +384,57 @@ export function NewSubmissionForm() {
             </div>
           )}
 
-          {/* STANDARD ACTIVITY INPUTS */}
-          {category !== "academic" && category !== "industry" && (
-            <div className="grid gap-2">
-              <Label>Achievement Level</Label>
-              <Select value={activityType} onValueChange={setActivityType}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="participation">Participation </SelectItem>
-                  <SelectItem value="rank3">Rank 3 / Third Prize </SelectItem>
-                  <SelectItem value="rank2">Rank 2 / Second Prize </SelectItem>
-                  <SelectItem value="rank1">Rank 1 / First Prize </SelectItem>
-                  <SelectItem value="leadership">Leadership Role </SelectItem>
-                </SelectContent>
-              </Select>
+          {/* 3. STANDARD ACTIVITY INPUTS */}
+          {category !== "cgpa_evaluation" && category !== "industry" && (
+            <div className="space-y-4">
+              <div className="grid gap-2">
+                <Label>Achievement Level</Label>
+                <Select value={activityType} onValueChange={setActivityType}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="participation">Participation </SelectItem>
+                    <SelectItem value="rank3">Rank 3 / Third Prize </SelectItem>
+                    <SelectItem value="rank2">Rank 2 / Second Prize </SelectItem>
+                    <SelectItem value="rank1">Rank 1 / First Prize </SelectItem>
+                    <SelectItem value="leadership">Leadership Role </SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {category === "extra_curricular" && (
+                <div className="grid gap-2">
+                  <Label className="flex items-center gap-2">
+                    <Globe className="h-4 w-4 text-blue-600" />
+                    Achievement Rank (Scope)
+                  </Label>
+                  <Select value={achievementRank} onValueChange={setAchievementRank}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select Rank/Scope (Optional)" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="national">National</SelectItem>
+                      <SelectItem value="international">International</SelectItem>
+                      <SelectItem value="inter">Inter-College</SelectItem>
+                      <SelectItem value="intra">Intra-College</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-muted-foreground">Points for this field are currently set to 0.</p>
+                </div>
+              )}
             </div>
           )}
 
-          {/* PROOF UPLOAD (Always Visible) */}
+          {/* PROOF UPLOAD */}
           <div className="grid gap-2">
-            <Label htmlFor="proof">Proof Document</Label>
-            <Input id="proof" type="file" onChange={(e) => setProofFile(e.target.files?.[0] || null)} />
-          </div>
+  <Label htmlFor="proof">Proof Document</Label>
+  <Input 
+    id="proof" 
+    type="file" 
+    required
+    onChange={(e) => setProofFile(e.target.files?.[0] || null)} 
+  />
+</div>
+
 
           {error && <p className="text-destructive text-sm">{error}</p>}
 

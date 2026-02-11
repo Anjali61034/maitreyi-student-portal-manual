@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Award, CheckCircle, Clock, FileText } from "lucide-react"
+import { format } from "date-fns/format"
 
 export default async function DashboardPage() {
   const supabase = await createClient()
@@ -69,10 +70,15 @@ export default async function DashboardPage() {
                 <div key={submission.id} className="flex items-center justify-between border-b pb-4 last:border-0">
                   <div className="space-y-1">
                     <p className="font-medium">{submission.title}</p>
-                    <p className="text-sm text-muted-foreground">
-                      {submission.achievements?.name} • {submission.achievements?.category}
-                    </p>
+                    <div>
+                                        <p className="text-sm text-muted-foreground">Achievement Date</p>
+                                        <p className="text-sm font-medium">{format(new Date(submission.achievement_date), "PPP")}</p>
+                                      </div>
                   </div>
+                   <div>
+                  <p className="text-sm text-muted-foreground mb-2">Description</p>
+                  <p className="text-sm">{submission.description}</p>
+                </div>
                   <div className="text-right">
                     <span
                       className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${

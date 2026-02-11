@@ -54,29 +54,45 @@ export function MeritEvaluationForm({ streamFilter, yearFilter, onEvaluationGene
         return
       }
 
-      // 2. Fetch Submissions
+      // 2. Fetch Submissions (UPDATED: Fetching category and cgpa_value)
       const studentIds = students.map(s => s.id)
       
       const { data: submissions, error: subError } = await supabase
         .from("submissions")
-        .select("student_id, points_awarded")
+        .select("student_id, points_awarded, category, cgpa_value")
         .in("student_id", studentIds)
         .eq("status", "approved")
 
       if (subError) throw subError
 
-      // 3. Calculate Totals and Rank
+      // 3. Calculate Totals, CGPA Values, and Rank
       const pointsMap: Record<string, number> = {}
+      const cgpaValueMap: Record<string, number> = {}
+
       submissions?.forEach(sub => {
+        // Calculate Total Points
         pointsMap[sub.student_id] = (pointsMap[sub.student_id] || 0) + (sub.points_awarded || 0)
+        
+        // Read the stored CGPA value for tie-breaking
+        if (sub.category === 'CGPA Evaluation') {
+          cgpaValueMap[sub.student_id] = sub.cgpa_value || 0
+        }
       })
 
       const rankedStudents = students
         .map(student => ({
           ...student,
-          totalPoints: pointsMap[student.id] || 0
+          totalPoints: pointsMap[student.id] || 0,
+          cgpaValue: cgpaValueMap[student.id] || 0 // Use the stored value
         }))
-        .sort((a, b) => b.totalPoints - a.totalPoints)
+        // SORT LOGIC: Primary = Total Points, Secondary = Actual CGPA Value
+        .sort((a, b) => {
+          if (b.totalPoints !== a.totalPoints) {
+            return b.totalPoints - a.totalPoints
+          }
+          // If points are tied, higher CGPA number wins
+          return b.cgpaValue - a.cgpaValue
+        })
         .map((student, index) => ({
           ...student,
           rank: index + 1
@@ -141,7 +157,7 @@ export function MeritEvaluationForm({ streamFilter, yearFilter, onEvaluationGene
       student.rank,
       student.full_name,
       student.student_id || "N/A",
-      student.course_name?.substring(0, 20) + (student.course_name?.length > 20 ? "..." : "") || "N/A", // Truncate long course names
+      student.course_name?.substring(0, 20) + (student.course_name?.length > 20 ? "..." : "") || "N/A",
       student.totalPoints
     ])
 
