@@ -168,7 +168,7 @@ export function NewSubmissionForm() {
         const typeKey = activityType as keyof typeof ACTIVITY_POINTS
         pointsToAward = ACTIVITY_POINTS[typeKey] || 0
 
-        if (category === "academic_research") finalCategory = "Academic Research"
+        if (category === "academic_research") finalCategory = "Academic Engagement Research"
         else if (category === "extra_curricular") finalCategory = "Extra Curricular"
         else if (category === "outreach") finalCategory = "Outreach"
         else if (category === "sports") finalCategory = "Sports"
