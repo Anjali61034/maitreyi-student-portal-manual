@@ -9,9 +9,9 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 
-// Course List extracted from the image
+// Course List
 const COURSE_LIST = [
   "B.A.(H) Economics",
   "B.A.(H) English",
@@ -33,6 +33,32 @@ const COURSE_LIST = [
   "B.Sc. Zoology (H)"
 ]
 
+// Logic to determine Stream based on Course
+const determineStream = (courseName: string): string => {
+  const commerceCourses = [
+    "B.A. Programme (Multidisciplinary)",
+    "B.Com (Programme)",
+    "B.Com (Honours)"
+  ]
+
+  const scienceCourses = [
+    "B.Sc. Life Sciences",
+    "B.Sc. Physical Sciences",
+    "B.Sc. Mathematical Sciences",
+    "B.Sc. Chemistry (H)",
+    "B.Sc. Electronics",
+    "B.Sc. Computer Science (H)",
+    "B.Sc. Botany (H)",
+    "B.Sc. Zoology (H)"
+  ]
+
+  if (commerceCourses.includes(courseName)) return "commerce"
+  if (scienceCourses.includes(courseName)) return "science"
+  
+  // Default to humanities for remaining B.A. (Hons) courses
+  return "humanities"
+}
+
 export default function SignUpPage() {
   const [formData, setFormData] = useState({
     email: "",
@@ -41,7 +67,7 @@ export default function SignUpPage() {
     fullName: "",
     role: "student",
     studentId: "",
-    courseName: "", // ADDED: Course selection
+    courseName: "",
     stream: "", 
     yearOfStudy: "",
     phone: "",
@@ -49,6 +75,14 @@ export default function SignUpPage() {
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
+
+  // --- EFFECT: Auto-fill Stream when Course changes ---
+  useEffect(() => {
+    if (formData.courseName) {
+      const autoStream = determineStream(formData.courseName)
+      setFormData(prev => ({ ...prev, stream: autoStream }))
+    }
+  }, [formData.courseName])
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -78,9 +112,8 @@ export default function SignUpPage() {
             full_name: formData.fullName,
             role: formData.role,
             student_id: formData.studentId || null,
-            // REMOVED: department
-            course_name: formData.courseName || null, // ADDED: Save Course
-            stream: formData.stream || null, // ADDED: Save Stream (Humanities/Science)
+            course_name: formData.courseName || null,
+            stream: formData.stream || null, // Will be "commerce", "science", or "humanities"
             year_of_study: formData.yearOfStudy ? Number.parseInt(formData.yearOfStudy) : null,
             phone: formData.phone || null,
           },
@@ -192,7 +225,6 @@ export default function SignUpPage() {
                         />
                       </div>
                       
-                      {/* ADDED: Course Dropdown replacing Department */}
                       <div className="grid gap-2">
                         <Label htmlFor="courseName">Course</Label>
                         <Select 
@@ -212,19 +244,34 @@ export default function SignUpPage() {
                     </div>
 
                     <div className="grid gap-2">
-                      <Label htmlFor="stream">Stream </Label>
+                      <Label htmlFor="stream">Stream (Auto-filled)</Label>
                       <Select
                         value={formData.stream}
+                        disabled // DISABLED: User cannot change this manually
                         onValueChange={(value) => setFormData({ ...formData, stream: value })}
                       >
                         <SelectTrigger id="stream">
                           <SelectValue placeholder="Select stream" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="humanities">Humanities / Commerce</SelectItem>
+                          <SelectItem value="humanities">Humanities</SelectItem>
+                          <SelectItem value="commerce">Commerce</SelectItem>
                           <SelectItem value="science">Science</SelectItem>
                         </SelectContent>
                       </Select>
+                      <p className="text-xs text-muted-foreground">
+                        {formData.courseName ? (
+  <>
+    Stream set to:{" "}
+    <span className="font-bold">
+      {formData.stream.toUpperCase()}
+    </span>
+  </>
+) : (
+  "Select a course to auto-assign stream."
+)}
+
+                      </p>
                     </div>
 
                     <div className="grid gap-4 md:grid-cols-2">
