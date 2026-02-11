@@ -187,9 +187,9 @@ export function NewSubmissionForm() {
 
       if (proofFile) {
         // --- ADD THIS CHECK ---
-        if (proofFile.size > 15 * 1024) { // 15KB in bytes
-          throw new Error("File size must be 15 KB or less.");
-        }
+        //if (proofFile.size > 15 * 1024) { // 15KB in bytes
+        //  throw new Error("File size must be 15 KB or less.");
+        //}
         // --------------------
 
         const fileExt = proofFile.name.split(".").pop()

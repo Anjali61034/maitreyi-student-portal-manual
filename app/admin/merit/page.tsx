@@ -12,18 +12,31 @@ export default function AdminMeritPage() {
   // State for Filters
   const [streamFilter, setStreamFilter] = useState<string>("all")
   const [yearFilter, setYearFilter] = useState<string>("all")
+  const [courseFilter, setCourseFilter] = useState<string>("all") // NEW: State for Course
   
-  // State for available options (Dynamic Dropdowns)
-  const [availableYears, setAvailableYears] = useState<string[]>(["1", "2", "3", "4"]) // Hardcoded as requested
+  // State for available options
+  const [availableYears, setAvailableYears] = useState<string[]>(["1", "2", "3", "4"]) // Hardcoded
+  const [availableCourses, setAvailableCourses] = useState<string[]>([]) // NEW: Dynamic Courses
   
   // State for Recent Evaluations
   const [recentEvaluations, setRecentEvaluations] = useState<any[]>([])
 
-  // Fetch Years (removed dynamic fetch as we hardcoded above)
-  // Fetch Recent Evaluations
+  // Fetch Data on Mount
   useEffect(() => {
+    fetchCourses()
     fetchRecentEvaluations()
   }, [])
+
+  // NEW: Fetch Available Courses
+  const fetchCourses = async () => {
+    const { data } = await supabase
+      .from("profiles")
+      .select("course_name")
+      .eq("role", "student")
+    
+    const courses = Array.from(new Set(data?.map(d => d.course_name).filter(Boolean))).sort()
+    setAvailableCourses(courses)
+  }
 
   const fetchRecentEvaluations = async () => {
     // 1. First, find the LATEST evaluation date in the table
@@ -57,7 +70,7 @@ export default function AdminMeritPage() {
         
         <div className="flex flex-wrap items-end gap-4 bg-slate-50 p-4 rounded-lg border">
           
-          {/* Stream Filter */}
+          {/* 1. Stream Filter */}
           <div className="w-full md:w-64">
             <label className="text-sm font-medium mb-1 block">Stream</label>
             <Select value={streamFilter} onValueChange={setStreamFilter}>
@@ -72,7 +85,7 @@ export default function AdminMeritPage() {
             </Select>
           </div>
 
-          {/* Hardcoded Year Filter */}
+          {/* 2. Year Filter */}
           <div className="w-full md:w-48">
             <label className="text-sm font-medium mb-1 block">Year of Study</label>
             <Select value={yearFilter} onValueChange={setYearFilter}>
@@ -89,13 +102,33 @@ export default function AdminMeritPage() {
               </SelectContent>
             </Select>
           </div>
+
+          {/* 3. Course Filter (NEW) */}
+          <div className="w-full md:w-64">
+            <label className="text-sm font-medium mb-1 block">Course</label>
+            <Select value={courseFilter} onValueChange={setCourseFilter}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select Course" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Courses</SelectItem>
+                {availableCourses.map((course) => (
+                  <SelectItem key={course} value={course}>
+                    {course}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
         </div>
       </div>
 
-      {/* Pass both filters to the form */}
+      {/* Pass all 3 filters to the form */}
       <MeritEvaluationForm 
         streamFilter={streamFilter}
         yearFilter={yearFilter}
+        courseFilter={courseFilter} // ADDED
         onEvaluationGenerated={fetchRecentEvaluations} 
       />
 

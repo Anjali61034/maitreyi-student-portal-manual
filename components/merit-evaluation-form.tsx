@@ -12,14 +12,17 @@ import autoTable from "jspdf-autotable"
 interface MeritEvaluationFormProps {
   streamFilter: string
   yearFilter: string
+  courseFilter: string // ADDED: Now accepting course as a prop
   onEvaluationGenerated: () => void
 }
 
-export function MeritEvaluationForm({ streamFilter, yearFilter, onEvaluationGenerated }: MeritEvaluationFormProps) {
+export function MeritEvaluationForm({ streamFilter, yearFilter, courseFilter, onEvaluationGenerated }: MeritEvaluationFormProps) {
   const supabase = createClient()
   const [isGenerating, setIsGenerating] = useState(false)
   const [statusMessage, setStatusMessage] = useState<{ type: "success" | "error" | "warning", text: string } | null>(null)
   const [generatedList, setGeneratedList] = useState<any[]>([])
+
+  // REMOVED: Internal course state, as it is now managed by the parent
 
   const handleGenerateMerit = async () => {
     setIsGenerating(true)
@@ -41,6 +44,11 @@ export function MeritEvaluationForm({ streamFilter, yearFilter, onEvaluationGene
         query = query.eq("year_of_study", parseInt(yearFilter))
       }
 
+      // UPDATED: Apply Course Filter from Props
+      if (courseFilter !== "all") {
+        query = query.eq("course_name", courseFilter)
+      }
+
       const { data: students, error: studentError } = await query
       
       if (studentError) throw studentError
@@ -54,7 +62,7 @@ export function MeritEvaluationForm({ streamFilter, yearFilter, onEvaluationGene
         return
       }
 
-      // 2. Fetch Submissions (UPDATED: Fetching category and cgpa_value)
+      // 2. Fetch Submissions
       const studentIds = students.map(s => s.id)
       
       const { data: submissions, error: subError } = await supabase
@@ -70,10 +78,8 @@ export function MeritEvaluationForm({ streamFilter, yearFilter, onEvaluationGene
       const cgpaValueMap: Record<string, number> = {}
 
       submissions?.forEach(sub => {
-        // Calculate Total Points
         pointsMap[sub.student_id] = (pointsMap[sub.student_id] || 0) + (sub.points_awarded || 0)
         
-        // Read the stored CGPA value for tie-breaking
         if (sub.category === 'CGPA Evaluation') {
           cgpaValueMap[sub.student_id] = sub.cgpa_value || 0
         }
@@ -83,14 +89,12 @@ export function MeritEvaluationForm({ streamFilter, yearFilter, onEvaluationGene
         .map(student => ({
           ...student,
           totalPoints: pointsMap[student.id] || 0,
-          cgpaValue: cgpaValueMap[student.id] || 0 // Use the stored value
+          cgpaValue: cgpaValueMap[student.id] || 0
         }))
-        // SORT LOGIC: Primary = Total Points, Secondary = Actual CGPA Value
         .sort((a, b) => {
           if (b.totalPoints !== a.totalPoints) {
             return b.totalPoints - a.totalPoints
           }
-          // If points are tied, higher CGPA number wins
           return b.cgpaValue - a.cgpaValue
         })
         .map((student, index) => ({
@@ -130,28 +134,27 @@ export function MeritEvaluationForm({ streamFilter, yearFilter, onEvaluationGene
     }
   }
 
-  // --- PDF GENERATION FUNCTION ---
   const handleDownloadPDF = () => {
     if (generatedList.length === 0) return
 
     const doc = new jsPDF()
     const pageWidth = doc.internal.pageSize.getWidth()
     
-    // Title
     doc.setFontSize(18)
     doc.text("Merit Evaluation List", pageWidth / 2, 20, { align: "center" })
     
-    // Filters Info
     doc.setFontSize(10)
-    const filterText = `Stream: ${streamFilter === 'all' ? 'All Streams' : streamFilter} | Year: ${yearFilter === 'all' ? 'All Years' : `Year ${yearFilter}`}`
+    const streamText = streamFilter === 'all' ? 'All Streams' : streamFilter
+    const yearText = yearFilter === 'all' ? 'All Years' : `Year ${yearFilter}`
+    const courseText = courseFilter === 'all' ? 'All Courses' : courseFilter
+    
+    const filterText = `Stream: ${streamText} | Year: ${yearText} | Course: ${courseText}`
     doc.text(filterText, pageWidth / 2, 30, { align: "center" })
     
-    // Date
     doc.setFontSize(9)
     doc.setTextColor(100)
     doc.text(`Generated on: ${new Date().toLocaleDateString()}`, pageWidth / 2, 35, { align: "center" })
 
-    // Table Data
     const tableColumn = ["Rank", "Student Name", "Student ID", "Course", "Points"]
     const tableRows = generatedList.map((student, index) => [
       student.rank,
@@ -161,24 +164,22 @@ export function MeritEvaluationForm({ streamFilter, yearFilter, onEvaluationGene
       student.totalPoints
     ])
 
-    // Generate Table
     autoTable(doc, {
       head: [tableColumn],
       body: tableRows,
       startY: 45,
       theme: 'grid',
-      headStyles: { fillColor: [2, 48, 71] }, // Dark Blue header
+      headStyles: { fillColor: [2, 48, 71] },
       styles: { fontSize: 9 },
       columnStyles: {
-        0: { cellWidth: 15 }, // Rank
-        1: { cellWidth: 'auto' }, // Name
-        2: { cellWidth: 30 }, // ID
-        3: { cellWidth: 40 }, // Course
-        4: { cellWidth: 15 }, // Points
+        0: { cellWidth: 15 },
+        1: { cellWidth: 'auto' },
+        2: { cellWidth: 30 },
+        3: { cellWidth: 40 },
+        4: { cellWidth: 15 },
       }
     })
 
-    // Save PDF
     doc.save(`merit-list-${streamFilter}-${yearFilter}-${new Date().toISOString().split('T')[0]}.pdf`)
   }
 
@@ -187,7 +188,7 @@ export function MeritEvaluationForm({ streamFilter, yearFilter, onEvaluationGene
       <CardHeader>
         <CardTitle>Generate New List</CardTitle>
         <p className="text-sm text-muted-foreground">
-          Filters: {streamFilter === "all" ? "All Streams" : streamFilter} • {yearFilter === "all" ? "All Years" : `Year ${yearFilter}`}
+          Filters: {streamFilter === "all" ? "All Streams" : streamFilter} • {yearFilter === "all" ? "All Years" : `Year ${yearFilter}`} • {courseFilter === "all" ? "All Courses" : courseFilter}
         </p>
       </CardHeader>
       <CardContent>
@@ -212,12 +213,8 @@ export function MeritEvaluationForm({ streamFilter, yearFilter, onEvaluationGene
               )}
             </Button>
 
-            {/* Download Button - Only shows if list is generated */}
             {generatedList.length > 0 && !isGenerating && (
-              <Button 
-                variant="outline" 
-                onClick={handleDownloadPDF}
-              >
+              <Button variant="outline" onClick={handleDownloadPDF}>
                 <Download className="mr-2 h-4 w-4" />
                 Download PDF
               </Button>
@@ -234,7 +231,6 @@ export function MeritEvaluationForm({ streamFilter, yearFilter, onEvaluationGene
             </div>
           )}
 
-          {/* Preview List */}
           {generatedList.length > 0 && !isGenerating && (
             <div className="mt-4 border rounded-lg p-4 bg-slate-50 max-h-[400px] overflow-y-auto">
               <h4 className="text-sm font-semibold mb-3 sticky top-0 bg-slate-50 py-1">Generated Results Preview</h4>
