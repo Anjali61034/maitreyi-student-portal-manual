@@ -186,6 +186,12 @@ export function NewSubmissionForm() {
       let proofFileName = null
 
       if (proofFile) {
+        // --- ADD THIS CHECK ---
+        if (proofFile.size > 15 * 1024) { // 15KB in bytes
+          throw new Error("File size must be 15 KB or less.");
+        }
+        // --------------------
+
         const fileExt = proofFile.name.split(".").pop()
         const fileName = `${user.id}/${Date.now()}.${fileExt}`
 
