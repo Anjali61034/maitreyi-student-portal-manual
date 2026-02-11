@@ -64,6 +64,83 @@ export default function AdminStudentsPage() {
     fetchData()
   }, [supabase])
 
+  <div class="portal-changes-card">
+    <h3>Teacher's Portal Configuration</h3>
+
+    <!-- 1. SGPA Section -->
+    <div class="form-group">
+        <label>Last 2 Sem SGPA (Average)</label>
+        <div class="sgpa-display">8.75</div>
+    </div>
+
+    <!-- 2. Level Selection & Points -->
+    <div class="form-group">
+        <label>Competition Level</label>
+        <select id="levelSelect" onchange="calculatePoints()">
+            <option value="" disabled selected>Select Level...</option>
+            <option value="international">International</option>
+            <option value="national">National</option>
+            <option value="inter-college">Inter-college</option>
+            <option value="intra-college">Intra-college</option>
+        </select>
+    </div>
+
+    <!-- 3. Category Wise Points (Dynamic) -->
+    <div class="form-group points-row">
+        <label style="margin:0;">Category Wise Points:</label>
+        <span id="pointsOutput" class="points-badge">0 Pts</span>
+    </div>
+
+    <!-- 4. Settings / Visibility -->
+    <div class="checkbox-group">
+        <input type="checkbox" id="categoriesVisible" checked>
+        <label for="categoriesVisible" style="margin:0; cursor:pointer;">Categories Visible</label>
+    </div>
+
+    <!-- 5. C4PA Check -->
+    <div class="c4pa-status">
+        <strong>Status Alert:</strong>
+        more C4PA check for 35/35
+    </div>
+</div>
+
+
+<script>
+    function calculatePoints() {
+        // Get the selected value from the dropdown
+        const level = document.getElementById('levelSelect').value;
+        const pointsOutput = document.getElementById('pointsOutput');
+        
+        let points = 0;
+
+        // Logic for Category wise points
+        switch(level) {
+            case 'international':
+                points = 3;
+                break;
+            case 'national':
+                points = 2;
+                break;
+            case 'inter-college':
+                points = 1.5;
+                break;
+            case 'intra-college':
+                points = 1;
+                break;
+            default:
+                points = 0;
+        }
+
+        // Update the display
+        pointsOutput.textContent = points + " Pts";
+        
+        // Visual feedback (optional)
+        pointsOutput.style.backgroundColor = "#bfdbfe"; // flash blue
+        setTimeout(() => {
+            pointsOutput.style.backgroundColor = "#dbeafe"; // revert
+        }, 300);
+    }
+
   // --- PROCESSING DATA ---
 
   // 1. Combine students with their specific submissions
