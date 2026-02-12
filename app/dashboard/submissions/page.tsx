@@ -228,6 +228,14 @@ export default function SubmissionsPage() {
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-4">
+
+                  {/* ADDED: Achievement Level and Rank (Using correct DB columns) */}
+<div className="grid grid-cols-2 gap-4">
+  <div>
+    <p className="text-sm text-muted-foreground">Achievement Level</p>
+    <p className="font-medium capitalize">{submission.activity_type?.replace(/_/g, ' ') || 'N/A'}</p>
+  </div>
+</div>
                   <div>
                     <p className="text-sm text-muted-foreground mb-2">Description</p>
                     <p className="text-sm">{submission.description}</p>

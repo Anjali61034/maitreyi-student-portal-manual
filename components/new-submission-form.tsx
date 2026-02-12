@@ -7,10 +7,9 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
-import { FileText } from "lucide-react";
 import { createClient } from "@/lib/supabase/client"
 import { useRouter } from "next/navigation"
-import { Trash2, Plus, GraduationCap, User, Globe, Calculator } from "lucide-react"
+import { Trash2, Plus, GraduationCap, User, Globe, Calculator, AlertTriangle, Loader2 } from "lucide-react"
 
 // Standard Activity Points
 const ACTIVITY_POINTS = {
@@ -36,7 +35,7 @@ export function NewSubmissionForm() {
   const [category, setCategory] = useState<string>("") 
   const [activityType, setActivityType] = useState<string>("participation")
   const [industryLevel, setIndustryLevel] = useState<string>("local")
-  const [achievementRank, setAchievementRank] = useState<string>("")
+  const [achievementRank, setAchievementRank] = useState<string>("") 
   
   const [title, setTitle] = useState("")
   const [description, setDescription] = useState("")
@@ -52,6 +51,9 @@ export function NewSubmissionForm() {
   
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  
+  // NEW: State for Warning Message
+  const [isCapped, setIsCapped] = useState<boolean>(false)
 
   // Fetch User Profile Data
   useEffect(() => {
@@ -116,6 +118,7 @@ export function NewSubmissionForm() {
     e.preventDefault()
     setIsLoading(true)
     setError(null)
+    setIsCapped(false) // Reset warning on new submit
 
     try {
       const { data: { user } } = await supabase.auth.getUser()
@@ -128,7 +131,7 @@ export function NewSubmissionForm() {
         
         if (!date || isNaN(selectedDate.getTime())) throw new Error("Please select a valid date.")
         if (selectedDate < academicStart || selectedDate > academicEnd) {
-          throw new Error("Invalid date. Achievement must be within the 2025-2026 Academic Year (January 2025 - December 2025).")
+          throw new Error("Invalid date. Achievement must be within 2025-2026 Academic Year (January 2025 - December 2025).")
         }
       }
 
@@ -137,7 +140,6 @@ export function NewSubmissionForm() {
       let details = description
       let finalTitle = title
       let finalDate = date
-      let finalSgpaValue = 0 // NEW: Variable to hold the calculated CGPA number
 
       // 1. CGPA EVALUATION
       if (category === "cgpa_evaluation") {
@@ -146,13 +148,7 @@ export function NewSubmissionForm() {
         
         pointsToAward = calculateSgpaPoints(sgpaList)
         
-        // --- NEW: Calculate the actual CGPA Number to store ---
-        const sum = validSgpas.reduce((a, b) => a + b, 0)
-        const averageSgpa = sum / validSgpas.length
-        finalSgpaValue = parseFloat(averageSgpa.toFixed(2))
-        // -----------------------------------------------------
-
-        finalTitle = `CGPA Performance Evaluation - ${userCourse}`
+        finalTitle = `SGPA Performance Evaluation - ${userCourse}`
         const semDetails = sgpaList.map(s => `Sem ${s.sem}: ${s.sgpa || '-'}`).join(", ")
         details = `Course: ${userCourse}. Stream: ${userStream.toUpperCase()}. ${semDetails}.`
         finalDate = new Date().toISOString().split('T')[0]
@@ -162,36 +158,42 @@ export function NewSubmissionForm() {
       else if (category === "industry") {
         pointsToAward = INDUSTRY_POINTS[industryLevel as keyof typeof INDUSTRY_POINTS] || 0
         finalCategory = "Industry Experience"
-      }
+      } 
       // 3. STANDARD ACTIVITIES
       else {
         const typeKey = activityType as keyof typeof ACTIVITY_POINTS
         pointsToAward = ACTIVITY_POINTS[typeKey] || 0
 
-        if (category === "academic_research") finalCategory = "Academic Engagement Research"
+        if (category === "academic_research") finalCategory = "Academic Research"
         else if (category === "extra_curricular") finalCategory = "Extra Curricular"
         else if (category === "outreach") finalCategory = "Outreach"
         else if (category === "sports") finalCategory = "Sports"
         else if (category === "ncc") finalCategory = "National Cadet Corps"
       }
 
-      // VALIDATION: 5 Point Limit
-      const currentPoints = existingPoints[finalCategory] || 0
-      if (currentPoints + pointsToAward > 5) {
-        throw new Error(`Limit reached! You have ${currentPoints}/5 points in ${finalCategory}.`)
+      // --- UPDATED LOGIC: CAPPING AND LIMIT CHECK ---
+      const currentCategoryPoints = existingPoints[finalCategory] || 0
+
+      // If category is already full (5+), prevent submission.
+      if (currentCategoryPoints >= 5) {
+        throw new Error("You have already reached the maximum 5 points for this category. No further submissions allowed.")
       }
+
+      // Calculate remaining space
+      const remainingPoints = 5 - currentCategoryPoints
+
+      // If the new points exceed the remaining space, cap them and show warning
+      if (pointsToAward > remainingPoints) {
+        pointsToAward = remainingPoints
+        setIsCapped(true)
+      }
+      // --- END OF UPDATED LOGIC ---
 
       // FILE UPLOAD
       let proofUrl = null
       let proofFileName = null
 
       if (proofFile) {
-        // --- ADD THIS CHECK ---
-        //if (proofFile.size > 150 * 1024) { // 15KB in bytes
-         // throw new Error("File size must be 15 KB or less.");
-        //}
-        // --------------------
-
         const fileExt = proofFile.name.split(".").pop()
         const fileName = `${user.id}/${Date.now()}.${fileExt}`
 
@@ -206,15 +208,8 @@ export function NewSubmissionForm() {
         proofFileName = proofFile.name
       }
 
-      // --- DETERMINE ACTIVITY TYPE TO SAVE ---
-      let activityTypeToSave = ""
-      if (category === "cgpa_evaluation") {
-          activityTypeToSave = "sgpa_performance"
-      } else if (category === "industry") {
-          activityTypeToSave = industryLevel 
-      } else {
-          activityTypeToSave = activityType 
-      }
+      // Activity Type Mapping
+      const activityTypeToSave = category === "cgpa_evaluation" ? "sgpa_performance" : category === "industry" ? industryLevel : activityType
 
       // INSERT TO DATABASE
       const { error: insertError } = await supabase.from("submissions").insert({
@@ -229,11 +224,10 @@ export function NewSubmissionForm() {
         status: "approved",
         achievement_scope: achievementRank || null, 
         activity_type: activityTypeToSave, 
-        // NEW: Save the calculated CGPA number here
-        cgpa_value: category === "cgpa_evaluation" ? finalSgpaValue : null, 
       })
 
       if (insertError) throw insertError
+
       router.push("/dashboard/submissions")
     } catch (error: unknown) {
       let errorMessage = "An error occurred.";
@@ -267,14 +261,6 @@ export function NewSubmissionForm() {
               <span className="capitalize text-primary">{userStream}</span>
             </div>
           </div>
-
-           <div className="bg-slate-50 border p-4 rounded-md flex flex-col sm:flex-row gap-4 text-sm">
-  <div className="flex items-center gap-2">
-    <FileText className="h-4 w-4 text-slate-500" />
-    <span className="font-semibold">PLEASE UPLOAD YOUR BEST CERTIFICATES</span>
-  </div>
-</div>
-
           
           {/* CATEGORY SELECTOR */}
           <div className="grid gap-2">
@@ -284,6 +270,7 @@ export function NewSubmissionForm() {
                 setAchievementRank("") 
                 setActivityType("participation")
                 setSgpaList([{ sem: 1, sgpa: "" }])
+                setIsCapped(false)
             }}>
               <SelectTrigger><SelectValue placeholder="Select Category" /></SelectTrigger>
               <SelectContent>
@@ -299,11 +286,11 @@ export function NewSubmissionForm() {
           </div>
 
           {/* CONDITIONAL: HIDE TITLE, DETAILS, DATE IF CGPA MODE */}
-          {category !== "cgpa_evaluation" && (
+          {!(category === "cgpa_evaluation") && (
             <>
               <div className="grid gap-2">
                 <Label htmlFor="title">Title of Activity</Label>
-                <Input id="title" value={title} onChange={e => setTitle(e.target.value)} required placeholder="e.g. Internship at Google" />
+                <Input id="title" value={title} onChange={e => setTitle(e.target.value)} required placeholder="e.g. Name, Nature of Involvement" />
               </div>
 
               <div className="grid gap-2">
@@ -336,7 +323,7 @@ export function NewSubmissionForm() {
                   <Input 
                     type="number" 
                     placeholder="Sem" 
-                    value={item.sem}
+                    value={item.sem} 
                     disabled 
                     className="w-20" 
                   />
@@ -406,41 +393,28 @@ export function NewSubmissionForm() {
                   </SelectContent>
                 </Select>
               </div>
-
-              {category === "extra_curricular" && (
-                <div className="grid gap-2">
-                  <Label className="flex items-center gap-2">
-                    <Globe className="h-4 w-4 text-blue-600" />
-                    Achievement Rank (Scope)
-                  </Label>
-                  <Select value={achievementRank} onValueChange={setAchievementRank}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select Rank/Scope (Optional)" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="national">National</SelectItem>
-                      <SelectItem value="international">International</SelectItem>
-                      <SelectItem value="inter">Inter-College</SelectItem>
-                      <SelectItem value="intra">Intra-College</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <p className="text-xs text-muted-foreground">Points for this field are currently set to 0.</p>
-                </div>
-              )}
             </div>
           )}
 
           {/* PROOF UPLOAD */}
           <div className="grid gap-2">
-  <Label htmlFor="proof">Proof Document</Label>
-  <Input 
-    id="proof" 
-    type="file" 
-    required
-    onChange={(e) => setProofFile(e.target.files?.[0] || null)} 
-  />
-</div>
+            <Label htmlFor="proof">Proof Document</Label>
+            <Input id="proof" type="file" onChange={(e) => setProofFile(e.target.files?.[0] || null)} />
+            <p className="text-xs text-muted-foreground">Please upload your best certificates.</p>
+          </div>
 
+          {/* NEW: WARNING MESSAGE FOR CAPPING */}
+          {isCapped && (
+             <div className="rounded-md bg-orange-50 border border-orange-200 p-4 flex items-start gap-3">
+                <AlertTriangle className="h-5 w-5 text-orange-700 shrink-0" />
+                <div>
+                  <p className="font-semibold text-orange-900">Submission Successful (Capped)</p>
+                  <p className="text-sm text-orange-800">
+                    Your achievement has been recorded. However, to maintain the category limit of 5.0 points, the system has adjusted the points for this entry. Your accumulated total for this category is now 5.0.
+                  </p>
+                </div>
+             </div>
+          )}
 
           {error && <p className="text-destructive text-sm">{error}</p>}
 

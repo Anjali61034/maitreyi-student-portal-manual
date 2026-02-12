@@ -25,7 +25,7 @@ const COURSE_LIST = [
   "B.Com (Honours)",
   "B.Sc. Life Sciences",
   "B.Sc. Physical Sciences",
-  "B.Sc. Mathematical Sciences",
+  "B.Sc. Mathematics (H)",
   "B.Sc. Chemistry (H)",
   "B.Sc. Electronics",
   "B.Sc. Computer Science (H)",
