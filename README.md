@@ -12,7 +12,7 @@ A comprehensive web-based platform for students to submit achievements
   - Academic
   - Sports
   - Extra-Curricular Activities (ECA)
-  - Outreach
+  - Outreach Activities
   - NCC
   - Industry
 - **Automatic point calculation** based on Rank / Participation

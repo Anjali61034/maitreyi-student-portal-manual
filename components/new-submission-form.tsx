@@ -164,9 +164,9 @@ export function NewSubmissionForm() {
         const typeKey = activityType as keyof typeof ACTIVITY_POINTS
         pointsToAward = ACTIVITY_POINTS[typeKey] || 0
 
-        if (category === "academic_research") finalCategory = "Academic Research"
-        else if (category === "extra_curricular") finalCategory = "Extra Curricular"
-        else if (category === "outreach") finalCategory = "Outreach"
+        if (category === "academic_engagement_and_research") finalCategory = "Academic Engagement and Research"
+        else if (category === "extra_curricular_activities") finalCategory = "Extra Curricular Activities"
+        else if (category === "outreach_activities") finalCategory = "Outreach Activities"
         else if (category === "sports") finalCategory = "Sports"
         else if (category === "ncc") finalCategory = "National Cadet Corps"
       }
@@ -273,15 +273,15 @@ export function NewSubmissionForm() {
                 setIsCapped(false)
             }}>
               <SelectTrigger><SelectValue placeholder="Select Category" /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="cgpa_evaluation">CGPA Evaluation (SGPA)</SelectItem>
-                <SelectItem value="academic_research">Academic Engagement and Research</SelectItem>
-                <SelectItem value="extra_curricular">Extra-Curricular</SelectItem>
-                <SelectItem value="outreach">Outreach Activities</SelectItem>
-                <SelectItem value="sports">Sports</SelectItem>
-                <SelectItem value="ncc">National Cadet Corps</SelectItem>
-                <SelectItem value="industry">Industry Experience</SelectItem>
-              </SelectContent>
+<SelectContent>
+  <SelectItem value="cgpa_evaluation">CGPA Evaluation (SGPA)</SelectItem>
+  <SelectItem value="academic_engagement_and_research">Academic Engagement and Research</SelectItem>
+  <SelectItem value="extra_curricular_activities">Extra Curricular Activities</SelectItem>
+  <SelectItem value="outreach_activities">Outreach Activities</SelectItem>
+  <SelectItem value="sports">Sports</SelectItem>
+  <SelectItem value="ncc">National Cadet Corps</SelectItem>
+  <SelectItem value="industry_experience">Industry Experience</SelectItem>
+</SelectContent>
             </Select>
           </div>
 

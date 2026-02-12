@@ -18,7 +18,7 @@ const COURSE_LIST = [
   "B.A.(H) History",
   "B.A.(H) Political Science",
   "B.A.(H) Sanskrit",
-  "B.A.(H) Philosophy",
+  "B.A.(H) Sociology",
   "B.A.(H) Hindi",
   "B.A. Programme (Multidisciplinary)",
   "B.Com (Programme)",
@@ -26,9 +26,8 @@ const COURSE_LIST = [
   "B.Sc. Life Sciences",
   "B.Sc. Physical Sciences",
   "B.Sc. Mathematics (H)",
+  "B.Sc. Physics (H)",
   "B.Sc. Chemistry (H)",
-  "B.Sc. Electronics",
-  "B.Sc. Computer Science (H)",
   "B.Sc. Botany (H)",
   "B.Sc. Zoology (H)"
 ]
@@ -44,10 +43,9 @@ const determineStream = (courseName: string): string => {
   const scienceCourses = [
     "B.Sc. Life Sciences",
     "B.Sc. Physical Sciences",
-    "B.Sc. Mathematical Sciences",
+    "B.Sc. Mathematics (H)",
     "B.Sc. Chemistry (H)",
-    "B.Sc. Electronics",
-    "B.Sc. Computer Science (H)",
+    "B.Sc. Physics (H)",
     "B.Sc. Botany (H)",
     "B.Sc. Zoology (H)"
   ]
