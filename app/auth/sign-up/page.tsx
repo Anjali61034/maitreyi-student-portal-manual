@@ -159,7 +159,7 @@ export default function SignUpPage() {
                     <Input
                       id="fullName"
                       type="text"
-                      placeholder="John Doe"
+                      placeholder="Yours Full Name"
                       required
                       value={formData.fullName}
                       onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
@@ -170,7 +170,7 @@ export default function SignUpPage() {
                     <Input
                       id="email"
                       type="email"
-                      placeholder="john@university.edu"
+                      placeholder="Yours Email"
                       required
                       value={formData.email}
                       onChange={(e) => setFormData({ ...formData, email: e.target.value })}
@@ -243,7 +243,7 @@ export default function SignUpPage() {
                         <Input
                           id="studentId"
                           type="text"
-                          placeholder="STU2024001"
+                          placeholder="Yours College Roll No."
                           required
                           value={formData.studentId}
                           onChange={(e) =>
