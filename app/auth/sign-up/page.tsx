@@ -71,6 +71,7 @@ export default function SignUpPage() {
     stream: "", 
     yearOfStudy: "",
     phone: "",
+    adminCode: "", // NEW: Added admin code state
   })
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
@@ -100,6 +101,19 @@ export default function SignUpPage() {
       setError("Student ID is required for student accounts")
       setIsLoading(false)
       return
+    }
+
+    // NEW: Admin Code Verification Logic
+    if (formData.role === "admin") {
+      const { data: isValid, error: rpcError } = await supabase.rpc('verify_admin_code', { 
+        input_code: formData.adminCode 
+      })
+
+      if (rpcError || !isValid) {
+        setError("Invalid Admin Code. Registration failed.")
+        setIsLoading(false)
+        return
+      }
     }
 
     try {
@@ -205,6 +219,22 @@ export default function SignUpPage() {
                   </Select>
                 </div>
 
+                {/* NEW: Admin Code Input Field */}
+                {formData.role === "admin" && (
+                  <div className="grid gap-2">
+                    <Label htmlFor="adminCode">Admin Registration Code</Label>
+                    <Input
+                      id="adminCode"
+                      type="password"
+                      placeholder="Enter authorized code"
+                      required
+                      value={formData.adminCode}
+                      onChange={(e) => setFormData({ ...formData, adminCode: e.target.value })}
+                    />
+                    <p className="text-xs text-muted-foreground">Only authorized personnel can create admin accounts.</p>
+                  </div>
+                )}
+
                 {formData.role === "student" && (
                   <>
                     <div className="grid gap-4 md:grid-cols-2">
@@ -261,16 +291,15 @@ export default function SignUpPage() {
                       </Select>
                       <p className="text-xs text-muted-foreground">
                         {formData.courseName ? (
-  <>
-    Stream set to:{" "}
-    <span className="font-bold">
-      {formData.stream.toUpperCase()}
-    </span>
-  </>
-) : (
-  "Select a course to auto-assign stream."
-)}
-
+                          <>
+                            Stream set to:{" "}
+                            <span className="font-bold">
+                              {formData.stream.toUpperCase()}
+                            </span>
+                          </>
+                        ) : (
+                          "Select a course to auto-assign stream."
+                        )}
                       </p>
                     </div>
 
