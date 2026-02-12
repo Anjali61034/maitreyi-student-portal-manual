@@ -347,14 +347,6 @@ export default function AdminStudentsPage() {
                         <div className="flex flex-wrap gap-2 mb-4">
                             {/* 1. Achievement Level Badge (Now reading from activity_type) */}
                             {getLevelBadge(sub)}
-
-                            {/* 2. Achievement Scope/Rank Badge */}
-                            {sub.achievement_scope && (
-                                <Badge variant="outline" className="border-blue-200 text-blue-700 bg-blue-50 capitalize flex items-center gap-1">
-                                    <Globe className="h-3 w-3" />
-                                    {sub.achievement_scope}
-                                </Badge>
-                            )}
                         </div>
                         
                         {/* Description */}
