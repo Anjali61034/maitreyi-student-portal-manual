@@ -28,10 +28,9 @@ export function AdminNav({ profile, isOpen }: AdminNavProps) {
 
   const navItems = [
     { href: "/admin", label: "Dashboard", icon: Home },
-    { href: "/admin/submissions", label: "Review Submissions", icon: FileText },
     { href: "/admin/students", label: "Students", icon: Users },
     { href: "/admin/merit", label: "Merit Evaluation", icon: Trophy },
-    { href: "/admin/achievements", label: "Achievements Info", icon: Award },
+    { href: "/admin/achievements", label: "Evaluation Criteria", icon: Award },
   ]
 
   return (

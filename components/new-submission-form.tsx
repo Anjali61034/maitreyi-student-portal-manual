@@ -123,12 +123,12 @@ export function NewSubmissionForm() {
 
       if (category !== "cgpa_evaluation") {
         const selectedDate = new Date(date)
-        const academicStart = new Date("2024-01-01")
+        const academicStart = new Date("2025-01-01")
         const academicEnd = new Date("2025-12-31")
         
         if (!date || isNaN(selectedDate.getTime())) throw new Error("Please select a valid date.")
         if (selectedDate < academicStart || selectedDate > academicEnd) {
-          throw new Error("Invalid date. Achievement must be within the 2024-2025 Academic Year (January 2024 - December 2025).")
+          throw new Error("Invalid date. Achievement must be within the 2025-2026 Academic Year (January 2025 - December 2025).")
         }
       }
 
@@ -187,8 +187,8 @@ export function NewSubmissionForm() {
 
       if (proofFile) {
         // --- ADD THIS CHECK ---
-        //if (proofFile.size > 15 * 1024) { // 15KB in bytes
-        //  throw new Error("File size must be 15 KB or less.");
+        //if (proofFile.size > 150 * 1024) { // 15KB in bytes
+         // throw new Error("File size must be 15 KB or less.");
         //}
         // --------------------
 
@@ -302,19 +302,19 @@ export function NewSubmissionForm() {
           {category !== "cgpa_evaluation" && (
             <>
               <div className="grid gap-2">
-                <Label htmlFor="title">Title</Label>
+                <Label htmlFor="title">Title of Activity</Label>
                 <Input id="title" value={title} onChange={e => setTitle(e.target.value)} required placeholder="e.g. Internship at Google" />
               </div>
 
               <div className="grid gap-2">
-                <Label htmlFor="description">Details</Label>
-                <Textarea id="description" value={description} onChange={e => setDescription(e.target.value)} required placeholder="More details..." />
+                <Label htmlFor="description">Activity Organiser</Label>
+                <Textarea id="description" value={description} onChange={e => setDescription(e.target.value)} required placeholder="Cultural society, club, university or any other organisation or institution outside" />
               </div>
 
               <div className="grid gap-2">
                 <Label htmlFor="date">Date</Label>
-                <Input id="date" type="date" value={date} onChange={e => setDate(e.target.value)} required min="2024-01-01" max="2025-12-31" />
-                <p className="text-xs text-muted-foreground">Must be between January 2024 - December 2025</p>
+                <Input id="date" type="date" value={date} onChange={e => setDate(e.target.value)} required min="2025-01-01" max="2025-12-31" />
+                <p className="text-xs text-muted-foreground">Must be between January 2025 - December 2025</p>
               </div>
             </>
           )}
