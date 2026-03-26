@@ -192,7 +192,10 @@ export function NewSubmissionForm() {
       // FILE UPLOAD
       let proofUrl = null
       let proofFileName = null
-
+      // 🚨 REQUIRED PROOF VALIDATION
+      if (!proofFile) {
+        throw new Error("Proof document is required. Please upload a file.")
+         }
       if (proofFile) {
         const fileExt = proofFile.name.split(".").pop()
         const fileName = `${user.id}/${Date.now()}.${fileExt}`
@@ -399,7 +402,7 @@ export function NewSubmissionForm() {
           {/* PROOF UPLOAD */}
           <div className="grid gap-2">
             <Label htmlFor="proof">Proof Document</Label>
-            <Input id="proof" type="file" onChange={(e) => setProofFile(e.target.files?.[0] || null)} />
+            <Input id="proof" type="file" required accept=".pdf,.jpg,.jpeg,.png" onChange={(e) => setProofFile(e.target.files?.[0] || null)}/>
             <p className="text-xs text-muted-foreground">Please upload your best certificates.</p>
           </div>
 
@@ -418,7 +421,7 @@ export function NewSubmissionForm() {
 
           {error && <p className="text-destructive text-sm">{error}</p>}
 
-          <Button type="submit" disabled={isLoading} className="w-full">
+          <Button type="submit" disabled={isLoading || !proofFile} className="w-full">
             {isLoading ? "Evaluating..." : "Submit & Get Points"}
           </Button>
         </form>
