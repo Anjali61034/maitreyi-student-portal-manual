@@ -270,11 +270,7 @@ export default function SubmissionsPage() {
                         className="p-0 h-auto text-primary"
                         onClick={() => {
                            // If it's an image, open dialog. If PDF, open new tab.
-                           if (submission.proof_url.match(/\.(jpeg|jpg|gif|png)$/i)) {
-                             setImagePreview({ url: submission.proof_url, name: submission.proof_file_name })
-                           } else {
-                             window.open(submission.proof_url, '_blank')
-                           }
+                          setImagePreview({ url: submission.proof_url, name: submission.proof_file_name })
                         }}
                       >
                         <ZoomIn className="h-4 w-4 mr-1" />
@@ -320,13 +316,23 @@ export default function SubmissionsPage() {
           </Button>
           
           <div className="flex items-center justify-center min-h-[60vh]">
-            {imagePreview && (
-              <img 
-                src={imagePreview.url} 
-                alt={imagePreview.name} 
-                className="max-h-[85vh] max-w-full object-contain"
-              />
-            )}
+           {imagePreview && (
+  <>
+    {imagePreview.url.match(/\.(jpeg|jpg|gif|png)$/i) ? (
+      <img 
+        src={imagePreview.url} 
+        alt={imagePreview.name} 
+        className="max-h-[85vh] max-w-full object-contain"
+      />
+    ) : (
+      <iframe
+        src={imagePreview.url}
+        className="w-full h-[85vh] border-0"
+        title="Document Preview"
+      />
+    )}
+  </>
+)}
           </div>
           
           <div className="absolute bottom-4 left-0 right-0 text-center text-white/70 text-sm">
