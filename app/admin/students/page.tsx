@@ -19,7 +19,11 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 <<<<<<< HEAD
+<<<<<<< HEAD
 import { FileText, ExternalLink } from "lucide-react"
+=======
+import { FileText, Award, X, ExternalLink, Globe } from "lucide-react"
+>>>>>>> 5d886d561d6b72043977d9eeea4328d2e9e7350d
 =======
 import { FileText, Award, X, ExternalLink, Globe } from "lucide-react"
 >>>>>>> 5d886d561d6b72043977d9eeea4328d2e9e7350d
@@ -65,8 +69,11 @@ export default function AdminStudentsPage() {
   }, [supabase])
 
 <<<<<<< HEAD
+<<<<<<< HEAD
   // ---------------- PROCESS DATA ----------------
 =======
+=======
+>>>>>>> 5d886d561d6b72043977d9eeea4328d2e9e7350d
   // --- HELPER: Get Badge Label based on Stored Activity Type ---
   const getLevelBadge = (sub: any) => {
     // We now rely on the explicit 'activity_type' column stored in the DB
@@ -110,6 +117,9 @@ export default function AdminStudentsPage() {
 
   // --- PROCESSING DATA ---
 
+<<<<<<< HEAD
+>>>>>>> 5d886d561d6b72043977d9eeea4328d2e9e7350d
+=======
 >>>>>>> 5d886d561d6b72043977d9eeea4328d2e9e7350d
   const studentsWithStats = students.map((student) => {
     const studentSubs = submissions.filter(
@@ -142,11 +152,14 @@ export default function AdminStudentsPage() {
     return {
       ...student,
 <<<<<<< HEAD
+<<<<<<< HEAD
       submissions: studentSubs,
       totalSubmissions: studentSubs.length,
       approvedSubmissions: approvedSubs.length,
       categoryPoints,
 =======
+=======
+>>>>>>> 5d886d561d6b72043977d9eeea4328d2e9e7350d
       submissions: studentSubmissions,
       totalSubmissions: studentSubmissions.length,
       approvedSubmissions: approved.length,
@@ -156,6 +169,7 @@ export default function AdminStudentsPage() {
   })
 
 <<<<<<< HEAD
+<<<<<<< HEAD
   const uniqueCourses = Array.from(
     new Set(students.map((s) => s.course_name).filter(Boolean))
   )
@@ -164,6 +178,8 @@ export default function AdminStudentsPage() {
     new Set(students.map((s) => s.year_of_study).filter(Boolean))
   )
 =======
+=======
+>>>>>>> 5d886d561d6b72043977d9eeea4328d2e9e7350d
   const uniqueCourses = Array.from(new Set(students.map(s => s.course_name).filter(Boolean))).sort()
   const uniqueYears = Array.from(new Set(students.map(s => s.year_of_study).filter(Boolean))).sort((a, b) => a - b)
 >>>>>>> 5d886d561d6b72043977d9eeea4328d2e9e7350d
@@ -180,12 +196,21 @@ export default function AdminStudentsPage() {
   })
 
 <<<<<<< HEAD
+<<<<<<< HEAD
   const sortedStudents = [...filteredStudents].sort(
     (a, b) => b.totalPoints - a.totalPoints
   )
 =======
+=======
+>>>>>>> 5d886d561d6b72043977d9eeea4328d2e9e7350d
   const sortedStudents = [...filteredStudents].sort((a, b) => b.totalPoints - a.totalPoints)
 >>>>>>> 5d886d561d6b72043977d9eeea4328d2e9e7350d
+
+  useEffect(() => {
+    if (selectedStudent && selectedStudent.submissions) {
+      setActiveCategory("") 
+    }
+  }, [selectedStudent])
 
   useEffect(() => {
     if (selectedStudent && selectedStudent.submissions) {
@@ -196,8 +221,11 @@ export default function AdminStudentsPage() {
   return (
     <div className="space-y-6">
 <<<<<<< HEAD
+<<<<<<< HEAD
 
       {/* Header */}
+=======
+>>>>>>> 5d886d561d6b72043977d9eeea4328d2e9e7350d
 =======
 >>>>>>> 5d886d561d6b72043977d9eeea4328d2e9e7350d
       <div>
