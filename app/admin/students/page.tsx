@@ -2,367 +2,250 @@
 
 import React, { useState, useEffect } from "react"
 import { createClient } from "@/lib/supabase/client"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { 
-  Dialog, 
-  DialogContent, 
-  DialogDescription, 
-  DialogHeader, 
-  DialogTitle, 
-  DialogTrigger 
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
 } from "@/components/ui/dialog"
-import { 
-  Select, 
-  SelectContent, 
-  SelectItem, 
-  SelectTrigger, 
-  SelectValue 
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/components/ui/select"
-import { FileText, Award, X, ExternalLink } from "lucide-react"
-
-// --- MAIN COMPONENT ---
+import { FileText, ExternalLink } from "lucide-react"
 
 export default function AdminStudentsPage() {
   const supabase = createClient()
 
-  // State for Data
   const [students, setStudents] = useState<any[]>([])
-  const [allSubmissions, setAllSubmissions] = useState<any[]>([])
+  const [submissions, setSubmissions] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
 
-  // State for Filters
-  const [filterCourse, setFilterCourse] = useState<string>("all")
-  const [filterYear, setFilterYear] = useState<string>("all")
+  const [filterCourse, setFilterCourse] = useState("all")
+  const [filterYear, setFilterYear] = useState("all")
 
-  // State for Dialogs
   const [selectedStudent, setSelectedStudent] = useState<any>(null)
   const [proofUrl, setProofUrl] = useState<string | null>(null)
 
-  // Fetch Data on Mount
+  const [showCategories, setShowCategories] = useState(true)
+
+  // ---------------- FETCH ----------------
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true)
-      
-      // 1. Fetch all Students
+
       const { data: studentsData } = await supabase
         .from("profiles")
         .select("*")
         .eq("role", "student")
 
-      // 2. Fetch ALL submissions at once (Optimized)
       const { data: submissionsData } = await supabase
         .from("submissions")
         .select("*")
 
       setStudents(studentsData || [])
-      setAllSubmissions(submissionsData || [])
+      setSubmissions(submissionsData || [])
       setLoading(false)
     }
 
     fetchData()
   }, [supabase])
 
-  <div class="portal-changes-card">
-    <h3>Teacher's Portal Configuration</h3>
-
-    <!-- 1. SGPA Section -->
-    <div class="form-group">
-        <label>Last 2 Sem SGPA (Average)</label>
-        <div class="sgpa-display">8.75</div>
-    </div>
-
-    <!-- 2. Level Selection & Points -->
-    <div class="form-group">
-        <label>Competition Level</label>
-        <select id="levelSelect" onchange="calculatePoints()">
-            <option value="" disabled selected>Select Level...</option>
-            <option value="international">International</option>
-            <option value="national">National</option>
-            <option value="inter-college">Inter-college</option>
-            <option value="intra-college">Intra-college</option>
-        </select>
-    </div>
-
-    <!-- 3. Category Wise Points (Dynamic) -->
-    <div class="form-group points-row">
-        <label style="margin:0;">Category Wise Points:</label>
-        <span id="pointsOutput" class="points-badge">0 Pts</span>
-    </div>
-
-    <!-- 4. Settings / Visibility -->
-    <div class="checkbox-group">
-        <input type="checkbox" id="categoriesVisible" checked>
-        <label for="categoriesVisible" style="margin:0; cursor:pointer;">Categories Visible</label>
-    </div>
-
-    <!-- 5. C4PA Check -->
-    <div class="c4pa-status">
-        <strong>Status Alert:</strong>
-        more C4PA check for 35/35
-    </div>
-</div>
-
-
-<script>
-    function calculatePoints() {
-        // Get the selected value from the dropdown
-        const level = document.getElementById('levelSelect').value;
-        const pointsOutput = document.getElementById('pointsOutput');
-        
-        let points = 0;
-
-        // Logic for Category wise points
-        switch(level) {
-            case 'international':
-                points = 3;
-                break;
-            case 'national':
-                points = 2;
-                break;
-            case 'inter-college':
-                points = 1.5;
-                break;
-            case 'intra-college':
-                points = 1;
-                break;
-            default:
-                points = 0;
-        }
-
-        // Update the display
-        pointsOutput.textContent = points + " Pts";
-        
-        // Visual feedback (optional)
-        pointsOutput.style.backgroundColor = "#bfdbfe"; // flash blue
-        setTimeout(() => {
-            pointsOutput.style.backgroundColor = "#dbeafe"; // revert
-        }, 300);
-    }
-
-  // --- PROCESSING DATA ---
-
-  // 1. Combine students with their specific submissions
+  // ---------------- PROCESS DATA ----------------
   const studentsWithStats = students.map((student) => {
-    const studentSubmissions = allSubmissions.filter((s) => s.student_id === student.id)
-    
-    const approved = studentSubmissions.filter((s) => s.status === "approved")
-    const totalPoints = approved.reduce((sum, s) => sum + (s.points_awarded || 0), 0)
+    const studentSubs = submissions.filter(
+      (s) => s.student_id === student.id
+    )
+
+    const approvedSubs = studentSubs.filter(
+      (s) => s.status === "approved"
+    )
+
+    // Category-wise Points
+    const categoryPoints: Record<string, number> = {}
+
+    approvedSubs.forEach((sub) => {
+      const category = sub.category || "OTHER"
+      const points = sub.points_awarded || 0
+
+      if (!categoryPoints[category]) {
+        categoryPoints[category] = 0
+      }
+
+      categoryPoints[category] += points
+    })
+
+    const totalPoints = Object.values(categoryPoints).reduce(
+      (sum, val) => sum + val,
+      0
+    )
 
     return {
       ...student,
-      submissions: studentSubmissions, // Store full submission list for details
-      totalSubmissions: studentSubmissions.length,
-      approvedSubmissions: approved.length,
+      submissions: studentSubs,
+      totalSubmissions: studentSubs.length,
+      approvedSubmissions: approvedSubs.length,
+      categoryPoints,
       totalPoints,
     }
   })
 
-  // 2. Get unique Courses and Years for Filter Dropdowns
-  const uniqueCourses = Array.from(new Set(students.map(s => s.course_name).filter(Boolean))).sort()
-  const uniqueYears = Array.from(new Set(students.map(s => s.year_of_study).filter(Boolean))).sort((a, b) => a - b)
+  const uniqueCourses = Array.from(
+    new Set(students.map((s) => s.course_name).filter(Boolean))
+  )
 
-  // 3. Apply Filters
+  const uniqueYears = Array.from(
+    new Set(students.map((s) => s.year_of_study).filter(Boolean))
+  )
+
   const filteredStudents = studentsWithStats.filter((student) => {
-    const matchCourse = filterCourse === "all" || student.course_name === filterCourse
-    const matchYear = filterYear === "all" || student.year_of_study?.toString() === filterYear
+    const matchCourse =
+      filterCourse === "all" || student.course_name === filterCourse
+
+    const matchYear =
+      filterYear === "all" ||
+      student.year_of_study?.toString() === filterYear
+
     return matchCourse && matchYear
   })
 
-  // 4. Apply Sorting (Points Descending)
-  const sortedStudents = [...filteredStudents].sort((a, b) => b.totalPoints - a.totalPoints)
+  const sortedStudents = [...filteredStudents].sort(
+    (a, b) => b.totalPoints - a.totalPoints
+  )
 
   return (
     <div className="space-y-6">
+
       {/* Header */}
       <div>
         <h1 className="text-3xl font-bold">Students</h1>
-        <p className="text-muted-foreground">Manage students and review achievements</p>
+        <p className="text-muted-foreground">
+          Leaderboard based on approved achievements
+        </p>
       </div>
 
-      {/* Filters Section */}
+      {/* Filters */}
       <Card>
-        <CardContent className="pt-6">
+        <CardContent className="pt-6 space-y-4">
+
           <div className="flex flex-wrap gap-4">
+
             <div className="w-full md:w-1/3">
-              <label className="text-sm font-medium mb-1 block">Filter by Course</label>
+              <label className="text-sm font-medium mb-1 block">
+                Filter by Course
+              </label>
               <Select value={filterCourse} onValueChange={setFilterCourse}>
                 <SelectTrigger>
                   <SelectValue placeholder="All Courses" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Courses</SelectItem>
-                  {uniqueCourses.map((course) => (
-                    <SelectItem key={course} value={course}>{course}</SelectItem>
+                  {uniqueCourses.map((course: any) => (
+                    <SelectItem key={course} value={course}>
+                      {course}
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
 
             <div className="w-full md:w-1/4">
-              <label className="text-sm font-medium mb-1 block">Filter by Year</label>
+              <label className="text-sm font-medium mb-1 block">
+                Filter by Year
+              </label>
               <Select value={filterYear} onValueChange={setFilterYear}>
                 <SelectTrigger>
                   <SelectValue placeholder="All Years" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Years</SelectItem>
-                  {uniqueYears.map((year) => (
-                    <SelectItem key={year} value={year.toString()}>Year {year}</SelectItem>
+                  {uniqueYears.map((year: any) => (
+                    <SelectItem key={year} value={year.toString()}>
+                      Year {year}
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
-            
-            <div className="w-full md:w-1/4 flex items-end">
-               <p className="text-sm text-muted-foreground">
-                  Showing <span className="font-bold text-foreground">{sortedStudents.length}</span> students
-               </p>
+
+            <div className="flex items-end text-sm text-muted-foreground">
+              Showing {sortedStudents.length} students
             </div>
           </div>
+
+          {/* Category Toggle */}
+          <div className="flex items-center justify-between border rounded-md p-3 bg-slate-50">
+            <span className="text-sm font-semibold">
+              Categories Visible
+            </span>
+
+            <button
+              onClick={() => setShowCategories(!showCategories)}
+              className={`w-12 h-6 flex items-center rounded-full p-1 transition ${
+                showCategories ? "bg-blue-600" : "bg-gray-300"
+              }`}
+            >
+              <div
+                className={`bg-white w-4 h-4 rounded-full shadow transform transition ${
+                  showCategories ? "translate-x-6" : ""
+                }`}
+              />
+            </button>
+          </div>
+
         </CardContent>
       </Card>
 
       {/* Student List */}
       {loading ? (
-        <div className="text-center py-10 text-muted-foreground">Loading student data...</div>
+        <div className="text-center py-10">Loading...</div>
       ) : (
         <div className="space-y-4">
-          {sortedStudents.map((student) => (
-            <Card 
-              key={student.id} 
-              className="cursor-pointer hover:border-primary transition-colors"
+          {sortedStudents.map((student, index) => (
+            <Card
+              key={student.id}
+              className="cursor-pointer hover:border-primary"
               onClick={() => setSelectedStudent(student)}
             >
               <CardContent className="pt-6">
-                <div className="flex items-start justify-between">
-                  <div className="space-y-1 flex-1">
-                    <div className="flex items-center gap-2">
-                      <h3 className="font-semibold text-lg">{student.full_name}</h3>
-                      <Badge variant="secondary">{student.totalPoints} pts</Badge>
-                    </div>
+                <div className="flex justify-between items-start">
+
+                  <div>
+                    <h3 className="font-semibold text-lg">
+                      #{index + 1} {student.full_name}
+                    </h3>
+
                     <p className="text-sm text-muted-foreground">
-                      {student.student_id} • {student.course_name || "Course not set"} • Year {student.year_of_study || "N/A"}
+                      {student.course_name} • Year {student.year_of_study}
                     </p>
-                    <p className="text-xs text-muted-foreground">{student.email}</p>
-                    
-                    <div className="flex gap-4 text-xs text-muted-foreground mt-2">
-                      <span>Submissions: <strong className="text-foreground">{student.totalSubmissions}</strong></span>
-                      <span>Approved: <strong className="text-green-600">{student.approvedSubmissions}</strong></span>
-                    </div>
+
+                    {showCategories && (
+                      <div className="flex gap-2 flex-wrap mt-2">
+                        {Object.entries(student.categoryPoints).map(
+                          ([category, points]) => (
+                            <Badge key={category} variant="outline">
+                              {category}: {points}
+                            </Badge>
+                          )
+                        )}
+                      </div>
+                    )}
                   </div>
-                  
-                  <div className="text-muted-foreground">
-                    <FileText size={20} />
-                  </div>
+
+                  <Badge>{student.totalPoints} pts</Badge>
+
                 </div>
               </CardContent>
             </Card>
           ))}
-          
-          {sortedStudents.length === 0 && !loading && (
-             <Card>
-               <CardContent className="pt-10 pb-10 text-center text-muted-foreground">
-                 No students found matching the selected filters.
-               </CardContent>
-             </Card>
-          )}
         </div>
       )}
-
-      {/* --- STUDENT DETAILS DIALOG --- */}
-      <Dialog open={!!selectedStudent} onOpenChange={() => setSelectedStudent(null)}>
-        <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle className="flex items-center justify-between">
-              <span>{selectedStudent?.full_name}'s Achievements</span>
-              <Badge variant="outline">Total: {selectedStudent?.totalPoints} pts</Badge>
-            </DialogTitle>
-            <DialogDescription>
-              {selectedStudent?.course_name} • Year {selectedStudent?.year_of_study}
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="space-y-4 mt-4">
-            {selectedStudent?.submissions.length === 0 ? (
-              <p className="text-center text-muted-foreground">No submissions yet.</p>
-            ) : (
-              selectedStudent?.submissions.map((sub: any) => (
-                <div key={sub.id} className="border rounded-lg p-4 bg-slate-50">
-                  <div className="flex justify-between items-start mb-2">
-                    <div>
-                      <h4 className="font-semibold text-sm">{sub.title}</h4>
-                      <p className="text-xs text-muted-foreground">
-                        {sub.category} • {new Date(sub.achievement_date).toLocaleDateString()}
-                      </p>
-                    </div>
-                    <Badge 
-                      variant={sub.status === 'approved' ? 'default' : 'secondary'}
-                    >
-                      {sub.status}
-                    </Badge>
-                  </div>
-                  
-                  {sub.description && (
-                    <p className="text-sm text-slate-700 mb-3 line-clamp-2">{sub.description}</p>
-                  )}
-
-                  {/* Proof Link */}
-                  {sub.proof_url ? (
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
-                      className="w-full sm:w-auto"
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        setProofUrl(sub.proof_url)
-                      }}
-                    >
-                      <ExternalLink className="h-4 w-4 mr-2" />
-                      View Proof Document
-                    </Button>
-                  ) : (
-                    <span className="text-xs text-muted-foreground">No proof uploaded</span>
-                  )}
-                </div>
-              ))
-            )}
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      {/* --- PROOF VIEWER DIALOG --- */}
-      <Dialog open={!!proofUrl} onOpenChange={() => setProofUrl(null)}>
-        <DialogContent className="max-w-4xl h-[80vh] p-0 overflow-hidden flex flex-col">
-          <DialogHeader className="px-6 py-4 border-b flex-shrink-0">
-            <DialogTitle>Submitted Document</DialogTitle>
-          </DialogHeader>
-          <div className="flex-1 bg-slate-100 w-full flex items-center justify-center p-4 overflow-hidden">
-            {proofUrl && (
-              <>
-                {/* If Image, use img tag to prevent zoom/distortion. If PDF, use iframe. */}
-                {proofUrl.match(/\.(jpeg|jpg|gif|png)$/) != null ? (
-                  <img
-                    src={proofUrl}
-                    alt="Proof Document"
-                    className="max-h-full max-w-full object-contain rounded shadow-sm"
-                  />
-                ) : (
-                  <iframe
-                    src={proofUrl}
-                    className="w-full h-full rounded border shadow-sm"
-                    title="Document Preview"
-                  />
-                )}
-              </>
-            )}
-          </div>
-          <div className="p-4 border-t flex justify-end flex-shrink-0 bg-white">
-            <Button variant="secondary" onClick={() => setProofUrl(null)}>Close Viewer</Button>
-          </div>
-        </DialogContent>
-      </Dialog>
 
     </div>
   )
