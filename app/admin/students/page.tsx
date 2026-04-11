@@ -18,15 +18,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-<<<<<<< HEAD
-<<<<<<< HEAD
 import { FileText, ExternalLink } from "lucide-react"
-=======
 import { FileText, Award, X, ExternalLink, Globe } from "lucide-react"
->>>>>>> 5d886d561d6b72043977d9eeea4328d2e9e7350d
-=======
+
 import { FileText, Award, X, ExternalLink, Globe } from "lucide-react"
->>>>>>> 5d886d561d6b72043977d9eeea4328d2e9e7350d
 
 export default function AdminStudentsPage() {
   const supabase = createClient()
@@ -68,12 +63,7 @@ export default function AdminStudentsPage() {
     fetchData()
   }, [supabase])
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-  // ---------------- PROCESS DATA ----------------
-=======
-=======
->>>>>>> 5d886d561d6b72043977d9eeea4328d2e9e7350d
+
   // --- HELPER: Get Badge Label based on Stored Activity Type ---
   const getLevelBadge = (sub: any) => {
     // We now rely on the explicit 'activity_type' column stored in the DB
@@ -117,10 +107,7 @@ export default function AdminStudentsPage() {
 
   // --- PROCESSING DATA ---
 
-<<<<<<< HEAD
->>>>>>> 5d886d561d6b72043977d9eeea4328d2e9e7350d
-=======
->>>>>>> 5d886d561d6b72043977d9eeea4328d2e9e7350d
+
   const studentsWithStats = students.map((student) => {
     const studentSubs = submissions.filter(
       (s) => s.student_id === student.id
@@ -151,25 +138,17 @@ export default function AdminStudentsPage() {
 
     return {
       ...student,
-<<<<<<< HEAD
-<<<<<<< HEAD
       submissions: studentSubs,
       totalSubmissions: studentSubs.length,
       approvedSubmissions: approvedSubs.length,
       categoryPoints,
-=======
-=======
->>>>>>> 5d886d561d6b72043977d9eeea4328d2e9e7350d
       submissions: studentSubmissions,
       totalSubmissions: studentSubmissions.length,
       approvedSubmissions: approved.length,
->>>>>>> 5d886d561d6b72043977d9eeea4328d2e9e7350d
       totalPoints,
     }
   })
 
-<<<<<<< HEAD
-<<<<<<< HEAD
   const uniqueCourses = Array.from(
     new Set(students.map((s) => s.course_name).filter(Boolean))
   )
