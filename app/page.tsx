@@ -47,7 +47,7 @@ export default async function HomePage() {
       <section className="container py-20 md:py-32">
         <div className="mx-auto max-w-3xl text-center">
           <h1 className="text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl text-balance">
-            Track Your Academic Excellence
+            Track Yours Academic Excellence
           </h1>
           <p className="mt-6 text-lg text-muted-foreground text-balance">
             A comprehensive platform for students to showcase their achievements and for administrators to evaluate
