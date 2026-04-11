@@ -32,13 +32,13 @@ interface Submission {
   created_at: string
   proof_url: string | null
   proof_file_name: string | null
-  category?: string // ADDED: For direct submissions
+  category?: string
   student: {
     full_name: string
     student_id: string
-    department: string
+    // Removed: department
   }
-  achievements?: { // Made optional for new direct submissions
+  achievements?: {
     name: string
     category: string
     max_points: number
@@ -130,10 +130,10 @@ export function SubmissionsTable({ submissions }: { submissions: Submission[] })
                   <div className="space-y-1">
                     <h3 className="font-semibold">{submission.title}</h3>
                     <p className="text-sm text-muted-foreground">
-                      {submission.student.full_name} ({submission.student.student_id}) • {submission.student.department}
+                      {submission.student.full_name} ({submission.student.student_id})
+                      {/* Removed department reference here as it was deleted */}
                     </p>
                     <p className="text-sm text-muted-foreground">
-                      {/* UPDATED: Handle both legacy (achievements) and new (category) data structures */}
                       {submission.achievements?.name || submission.category || "General Achievement"} 
                       {" • "}
                       {submission.achievements?.category || submission.category} 
@@ -177,7 +177,7 @@ export function SubmissionsTable({ submissions }: { submissions: Submission[] })
       </Card>
 
       <Dialog open={!!selectedSubmission} onOpenChange={() => setSelectedSubmission(null)}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>{selectedSubmission?.title}</DialogTitle>
             <DialogDescription>Review and approve or reject this submission</DialogDescription>
@@ -201,7 +201,7 @@ export function SubmissionsTable({ submissions }: { submissions: Submission[] })
 
               <div>
                 <Label className="text-muted-foreground">Description</Label>
-                <p className="text-sm">{selectedSubmission.description}</p>
+                <p className="text-sm whitespace-pre-wrap">{selectedSubmission.description}</p>
               </div>
 
               <div className="grid gap-4 md:grid-cols-2">
@@ -215,20 +215,27 @@ export function SubmissionsTable({ submissions }: { submissions: Submission[] })
                 </div>
               </div>
 
-              {selectedSubmission.proof_file_name && (
-                <div>
+              {/* --- UPDATED: PROOF PREVIEW INSIDE MODAL --- */}
+              {selectedSubmission.proof_url && (
+                <div className="space-y-2">
                   <Label className="text-muted-foreground">Proof Document</Label>
-                  <p className="text-sm font-medium">{selectedSubmission.proof_file_name}</p>
-                  {selectedSubmission.proof_url && (
-                    <a
-                      href={selectedSubmission.proof_url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-sm text-primary underline"
-                    >
-                      View Document
-                    </a>
-                  )}
+                  <div className="w-full h-[500px] bg-slate-100 border rounded flex items-center justify-center overflow-hidden relative">
+                    {/* Logic to display Image vs PDF */}
+                    {selectedSubmission.proof_url.match(/\.(jpeg|jpg|gif|png)$/i) ? (
+                      <img
+                        src={selectedSubmission.proof_url}
+                        alt="Proof Document"
+                        className="max-h-full max-w-full object-contain"
+                      />
+                    ) : (
+                      <iframe
+                        src={selectedSubmission.proof_url}
+                        className="w-full h-full border-0"
+                        title="Document Preview"
+                      />
+                    )}
+                  </div>
+                  <p className="text-xs text-muted-foreground text-center">{selectedSubmission.proof_file_name}</p>
                 </div>
               )}
 
@@ -266,7 +273,6 @@ export function SubmissionsTable({ submissions }: { submissions: Submission[] })
                       id="points"
                       type="number"
                       min="0"
-                      // UPDATED: Use max_points if available, otherwise default to 5
                       max={selectedSubmission.achievements?.max_points || 5}
                       placeholder={selectedSubmission.achievements?.max_points ? `Max ${selectedSubmission.achievements.max_points} points` : "Enter points"}
                       value={reviewData.pointsAwarded}

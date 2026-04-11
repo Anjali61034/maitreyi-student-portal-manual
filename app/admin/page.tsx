@@ -49,74 +49,8 @@ export default async function AdminDashboardPage() {
             <div className="text-2xl font-bold">{totalSubmissions}</div>
           </CardContent>
         </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Pending Review</CardTitle>
-            <Clock className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{pendingSubmissions}</div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Approved</CardTitle>
-            <CheckCircle className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{approvedSubmissions}</div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Rejected</CardTitle>
-            <XCircle className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{rejectedSubmissions}</div>
-          </CardContent>
-        </Card>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Recent Submissions</CardTitle>
-          <CardDescription>Latest achievement submissions from students</CardDescription>
-        </CardHeader>
-        <CardContent>
-          {recentSubmissions && recentSubmissions.length > 0 ? (
-            <div className="space-y-4">
-              {recentSubmissions.map((submission: any) => (
-                <div key={submission.id} className="flex items-center justify-between border-b pb-4 last:border-0">
-                  <div className="space-y-1">
-                    <p className="font-medium">{submission.title}</p>
-                    <p className="text-sm text-muted-foreground">
-                      {submission.profiles?.full_name} ({submission.profiles?.student_id}) •{" "}
-                      {submission.achievements?.name}
-                    </p>
-                  </div>
-                  <span
-                    className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
-                      submission.status === "approved"
-                        ? "bg-green-100 text-green-800"
-                        : submission.status === "rejected"
-                          ? "bg-red-100 text-red-800"
-                          : "bg-yellow-100 text-yellow-800"
-                    }`}
-                  >
-                    {submission.status}
-                  </span>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <p className="text-sm text-muted-foreground">No submissions yet</p>
-          )}
-        </CardContent>
-      </Card>
     </div>
   )
 }

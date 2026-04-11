@@ -4,7 +4,7 @@
 
 The Student Merit Portal is a full-stack web application designed for educational institutions to manage and evaluate student achievements. It provides a comprehensive system for students to submit their academic, sports, cultural, and other achievements, while administrators can review submissions and generate merit-based rankings.
 
----
+
 
 ## 🛠️ Tech Stack (Detailed)
 
