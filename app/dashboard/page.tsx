@@ -26,7 +26,7 @@ export default async function DashboardPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold">Dashboard</h1>
+        <h1 className="text-3xl font-bold">AchieveX- Application for IQAC  Meritorious Student Award 2025</h1>
         <p className="text-muted-foreground">Welcome back! Here's your achievement overview.</p>
       </div>
 
@@ -55,7 +55,7 @@ export default async function DashboardPage() {
       {/* --- INSTRUCTIONS CARD --- */}
       <Card className="border-l-4 border-l-blue-500">
         <CardHeader>
-          <CardTitle className="text-lg">Instructions for Filling Progress Card</CardTitle>
+          <CardTitle className="text-lg">Instructions for Filling your Overall Details</CardTitle>
           <CardDescription>Important guidelines for submitting your achievements</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4 text-sm">
@@ -63,7 +63,7 @@ export default async function DashboardPage() {
           {/* Text Instructions */}
           <ol className="list-decimal pl-5 space-y-2">
             <li className="leading-relaxed">
-              Each student has to fill details of all of activities she has been a part of, in whatever capacity, from <strong>January to December</strong> of each calendar year.
+              Each student has to fill details of all of activities she has been a part of, in whatever capacity, from <strong>January 1, 2025 to December 31, 2025.</strong> of each calendar year.
             </li>
             <li className="leading-relaxed">
               Activities are segregated into categories. Each category has a code. Write the <strong>activity code</strong> each time you make an entry in the card.
@@ -139,7 +139,7 @@ export default async function DashboardPage() {
             <div>
               <p className="font-semibold text-orange-900">Deadline Notice</p>
               <p className="text-orange-800">
-                This should be filled by next monday i.e 16/03/2026.
+                This should be filled by next monday i.e 30April,2026.
               </p>
             </div>
           </div>
