@@ -2,67 +2,68 @@
 
 import React, { useState, useEffect } from "react"
 import { createClient } from "@/lib/supabase/client"
-import { Card, CardContent } from "@/components/ui/card"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
+import { 
+  Dialog, 
+  DialogContent, 
+  DialogDescription, 
+  DialogHeader, 
+  DialogTitle, 
+  DialogTrigger 
 } from "@/components/ui/dialog"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
+import { 
+  Select, 
+  SelectContent, 
+  SelectItem, 
+  SelectTrigger, 
+  SelectValue 
 } from "@/components/ui/select"
-import { FileText, ExternalLink } from "lucide-react"
-import { FileText, Award, X, ExternalLink, Globe } from "lucide-react"
-
 import { FileText, Award, X, ExternalLink, Globe } from "lucide-react"
 
 export default function AdminStudentsPage() {
   const supabase = createClient()
 
+  // State for Data
   const [students, setStudents] = useState<any[]>([])
-  const [submissions, setSubmissions] = useState<any[]>([])
+  const [allSubmissions, setAllSubmissions] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
 
-  const [filterCourse, setFilterCourse] = useState("all")
-  const [filterYear, setFilterYear] = useState("all")
+  // State for Filters
+  const [filterCourse, setFilterCourse] = useState<string>("all")
+  const [filterYear, setFilterYear] = useState<string>("all")
 
+  // State for Dialogs
   const [selectedStudent, setSelectedStudent] = useState<any>(null)
   const [proofUrl, setProofUrl] = useState<string | null>(null)
   
   // State for Category Navigation in Dialog
   const [activeCategory, setActiveCategory] = useState<string>("")
 
-  const [showCategories, setShowCategories] = useState(true)
-
-  // ---------------- FETCH ----------------
+  // Fetch Data on Mount
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true)
-
+      
+      // 1. Fetch all Students
       const { data: studentsData } = await supabase
         .from("profiles")
         .select("*")
         .eq("role", "student")
 
+      // 2. Fetch ALL submissions at once (Optimized)
       const { data: submissionsData } = await supabase
         .from("submissions")
         .select("*")
 
       setStudents(studentsData || [])
-      setSubmissions(submissionsData || [])
+      setAllSubmissions(submissionsData || [])
       setLoading(false)
     }
 
     fetchData()
   }, [supabase])
-
 
   // --- HELPER: Get Badge Label based on Stored Activity Type ---
   const getLevelBadge = (sub: any) => {
@@ -107,41 +108,14 @@ export default function AdminStudentsPage() {
 
   // --- PROCESSING DATA ---
 
-
   const studentsWithStats = students.map((student) => {
-    const studentSubs = submissions.filter(
-      (s) => s.student_id === student.id
-    )
-
-    const approvedSubs = studentSubs.filter(
-      (s) => s.status === "approved"
-    )
-
-    // Category-wise Points
-    const categoryPoints: Record<string, number> = {}
-
-    approvedSubs.forEach((sub) => {
-      const category = sub.category || "OTHER"
-      const points = sub.points_awarded || 0
-
-      if (!categoryPoints[category]) {
-        categoryPoints[category] = 0
-      }
-
-      categoryPoints[category] += points
-    })
-
-    const totalPoints = Object.values(categoryPoints).reduce(
-      (sum, val) => sum + val,
-      0
-    )
+    const studentSubmissions = allSubmissions.filter((s) => s.student_id === student.id)
+    
+    const approved = studentSubmissions.filter((s) => s.status === "approved")
+    const totalPoints = approved.reduce((sum, s) => sum + (s.points_awarded || 0), 0)
 
     return {
       ...student,
-      submissions: studentSubs,
-      totalSubmissions: studentSubs.length,
-      approvedSubmissions: approvedSubs.length,
-      categoryPoints,
       submissions: studentSubmissions,
       totalSubmissions: studentSubmissions.length,
       approvedSubmissions: approved.length,
@@ -149,47 +123,16 @@ export default function AdminStudentsPage() {
     }
   })
 
-  const uniqueCourses = Array.from(
-    new Set(students.map((s) => s.course_name).filter(Boolean))
-  )
-
-  const uniqueYears = Array.from(
-    new Set(students.map((s) => s.year_of_study).filter(Boolean))
-  )
-=======
-=======
->>>>>>> 5d886d561d6b72043977d9eeea4328d2e9e7350d
   const uniqueCourses = Array.from(new Set(students.map(s => s.course_name).filter(Boolean))).sort()
   const uniqueYears = Array.from(new Set(students.map(s => s.year_of_study).filter(Boolean))).sort((a, b) => a - b)
->>>>>>> 5d886d561d6b72043977d9eeea4328d2e9e7350d
 
   const filteredStudents = studentsWithStats.filter((student) => {
-    const matchCourse =
-      filterCourse === "all" || student.course_name === filterCourse
-
-    const matchYear =
-      filterYear === "all" ||
-      student.year_of_study?.toString() === filterYear
-
+    const matchCourse = filterCourse === "all" || student.course_name === filterCourse
+    const matchYear = filterYear === "all" || student.year_of_study?.toString() === filterYear
     return matchCourse && matchYear
   })
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-  const sortedStudents = [...filteredStudents].sort(
-    (a, b) => b.totalPoints - a.totalPoints
-  )
-=======
-=======
->>>>>>> 5d886d561d6b72043977d9eeea4328d2e9e7350d
   const sortedStudents = [...filteredStudents].sort((a, b) => b.totalPoints - a.totalPoints)
->>>>>>> 5d886d561d6b72043977d9eeea4328d2e9e7350d
-
-  useEffect(() => {
-    if (selectedStudent && selectedStudent.submissions) {
-      setActiveCategory("") 
-    }
-  }, [selectedStudent])
 
   useEffect(() => {
     if (selectedStudent && selectedStudent.submissions) {
@@ -199,140 +142,101 @@ export default function AdminStudentsPage() {
 
   return (
     <div className="space-y-6">
-<<<<<<< HEAD
-<<<<<<< HEAD
-
-      {/* Header */}
-=======
->>>>>>> 5d886d561d6b72043977d9eeea4328d2e9e7350d
-=======
->>>>>>> 5d886d561d6b72043977d9eeea4328d2e9e7350d
       <div>
         <h1 className="text-3xl font-bold">Students</h1>
-        <p className="text-muted-foreground">
-          Leaderboard based on approved achievements
-        </p>
+        <p className="text-muted-foreground">Manage students and review achievements</p>
       </div>
 
-      {/* Filters */}
+      {/* Filters Section */}
       <Card>
-        <CardContent className="pt-6 space-y-4">
-
+        <CardContent className="pt-6">
           <div className="flex flex-wrap gap-4">
-
             <div className="w-full md:w-1/3">
-              <label className="text-sm font-medium mb-1 block">
-                Filter by Course
-              </label>
+              <label className="text-sm font-medium mb-1 block">Filter by Course</label>
               <Select value={filterCourse} onValueChange={setFilterCourse}>
                 <SelectTrigger>
                   <SelectValue placeholder="All Courses" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Courses</SelectItem>
-                  {uniqueCourses.map((course: any) => (
-                    <SelectItem key={course} value={course}>
-                      {course}
-                    </SelectItem>
+                  {uniqueCourses.map((course) => (
+                    <SelectItem key={course} value={course}>{course}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
 
             <div className="w-full md:w-1/4">
-              <label className="text-sm font-medium mb-1 block">
-                Filter by Year
-              </label>
+              <label className="text-sm font-medium mb-1 block">Filter by Year</label>
               <Select value={filterYear} onValueChange={setFilterYear}>
                 <SelectTrigger>
                   <SelectValue placeholder="All Years" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Years</SelectItem>
-                  {uniqueYears.map((year: any) => (
-                    <SelectItem key={year} value={year.toString()}>
-                      Year {year}
-                    </SelectItem>
+                  {uniqueYears.map((year) => (
+                    <SelectItem key={year} value={year.toString()}>Year {year}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
-
-            <div className="flex items-end text-sm text-muted-foreground">
-              Showing {sortedStudents.length} students
+            
+            <div className="w-full md:w-1/4 flex items-end">
+               <p className="text-sm text-muted-foreground">
+                  Showing <span className="font-bold text-foreground">{sortedStudents.length}</span> students
+               </p>
             </div>
           </div>
-
-          {/* Category Toggle */}
-          <div className="flex items-center justify-between border rounded-md p-3 bg-slate-50">
-            <span className="text-sm font-semibold">
-              Categories Visible
-            </span>
-
-            <button
-              onClick={() => setShowCategories(!showCategories)}
-              className={`w-12 h-6 flex items-center rounded-full p-1 transition ${
-                showCategories ? "bg-blue-600" : "bg-gray-300"
-              }`}
-            >
-              <div
-                className={`bg-white w-4 h-4 rounded-full shadow transform transition ${
-                  showCategories ? "translate-x-6" : ""
-                }`}
-              />
-            </button>
-          </div>
-
         </CardContent>
       </Card>
 
       {/* Student List */}
       {loading ? (
-        <div className="text-center py-10">Loading...</div>
+        <div className="text-center py-10 text-muted-foreground">Loading student data...</div>
       ) : (
         <div className="space-y-4">
-          {sortedStudents.map((student, index) => (
-            <Card
-              key={student.id}
-              className="cursor-pointer hover:border-primary"
+          {sortedStudents.map((student) => (
+            <Card 
+              key={student.id} 
+              className="cursor-pointer hover:border-primary transition-colors"
               onClick={() => setSelectedStudent(student)}
             >
               <CardContent className="pt-6">
-                <div className="flex justify-between items-start">
-
-                  <div>
-                    <h3 className="font-semibold text-lg">
-                      #{index + 1} {student.full_name}
-                    </h3>
-
+                <div className="flex items-start justify-between">
+                  <div className="space-y-1 flex-1">
+                    <div className="flex items-center gap-2">
+                      <h3 className="font-semibold text-lg">{student.full_name}</h3>
+                      <Badge variant="secondary">{student.totalPoints} pts</Badge>
+                    </div>
                     <p className="text-sm text-muted-foreground">
-                      {student.course_name} • Year {student.year_of_study}
+                      {student.student_id} • {student.course_name || "Course not set"} • Year {student.year_of_study || "N/A"}
                     </p>
-
-                    {showCategories && (
-                      <div className="flex gap-2 flex-wrap mt-2">
-                        {Object.entries(student.categoryPoints).map(
-                          ([category, points]) => (
-                            <Badge key={category} variant="outline">
-                              {category}: {points}
-                            </Badge>
-                          )
-                        )}
-                      </div>
-                    )}
+                    <p className="text-xs text-muted-foreground">{student.email}</p>
+                    
+                    <div className="flex gap-4 text-xs text-muted-foreground mt-2">
+                      <span>Submissions: <strong className="text-foreground">{student.totalSubmissions}</strong></span>
+                      <span>Approved: <strong className="text-green-600">{student.approvedSubmissions}</strong></span>
+                    </div>
                   </div>
-
-                  <Badge>{student.totalPoints} pts</Badge>
-
+                  
+                  <div className="text-muted-foreground">
+                    <FileText size={20} />
+                  </div>
                 </div>
               </CardContent>
             </Card>
           ))}
+          
+          {sortedStudents.length === 0 && !loading && (
+             <Card>
+               <CardContent className="pt-10 pb-10 text-center text-muted-foreground">
+                 No students found matching the selected filters.
+               </CardContent>
+             </Card>
+          )}
         </div>
       )}
 
-<<<<<<< HEAD
-=======
       {/* --- STUDENT DETAILS DIALOG --- */}
       <Dialog open={!!selectedStudent} onOpenChange={() => setSelectedStudent(null)}>
         <DialogContent className="!w-[80vw] !max-w-none h-[85vh] overflow-hidden p-0 flex flex-col">
@@ -516,7 +420,6 @@ export default function AdminStudentsPage() {
         </DialogContent>
       </Dialog>
 
->>>>>>> 5d886d561d6b72043977d9eeea4328d2e9e7350d
     </div>
   )
 }
