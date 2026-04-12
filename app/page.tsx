@@ -66,6 +66,7 @@ export default async function HomePage() {
            <h1 className="text-2xl sm:text-5xl md:text-4xl font-bold tracking-tight text-balance">
             Application Portal for IQAC  <br className="block sm:hidden" /> Meritorious Student Award
           </h1>
+          <br className="block sm:hidden" />
           <h2 className="text-2xl sm:text-5xl md:text-2xl  tracking-tight text-balance">
             Track Your Academic Excellence
           </h2>
