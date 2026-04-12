@@ -321,7 +321,7 @@ export function NewSubmissionForm() {
               </div>
 
               <div className="grid gap-2">
-                <Label htmlFor="date">Date</Label>
+                <Label htmlFor="date">Date of Activity</Label>
                 <Input id="date" type="date" value={date} onChange={e => setDate(e.target.value)} required min="2025-01-01" max="2025-12-31" />
                 <p className="text-xs text-muted-foreground">Must be between January 2025 - December 2025</p>
               </div>
