@@ -335,13 +335,14 @@ export default function AdminStudentsPage() {
                               </span>
                             </div>
                           </div>
-                          <div className="flex flex-col items-end ml-4">
-                             <span className="text-lg font-bold text-primary">
-                               +{sub.points_awarded}
-                             </span>
-                             <span className="text-[10px] text-muted-foreground uppercase font-semibold">Points</span>
-                          </div>
-                        </div>
+                         <div className="flex flex-col items-end ml-4">
+                           <span className="text-lg font-bold text-primary">
+                             +{sub.points_awarded}
+                           </span>
+                           
+                           {sub.is_capped && (
+                        <span className="text-xs text-orange-600"> ⚠ Capped to max (5) </span>)}
+                           <span className="text-[10px] text-muted-foreground uppercase font-semibold"> Points </span></div>
                         
                         {/* --- VISIBILITY FOR LEVEL & SCOPE --- */}
                         <div className="flex flex-wrap gap-2 mb-4">
