@@ -37,9 +37,11 @@ export default async function HomePage() {
               height={46}
               className="object-contain sm:w-[48px] sm:h-[48px] md:w-[54px] md:h-[54px]"
             />
-            <span className="text-[11px] sm:text-xs md:text-lg font-semibold tracking-tight leading-tight">
-              AchieveX Maitreyi - Application Portal for IQAC Meritorious Student Award
-            </span>
+            <span className="text-[13px] sm:text-xs md:text-lg font-semibold leading-tight">
+  AchieveX - Maitreyi <br className="block sm:hidden" />
+  Application Portal for IQAC <br className="block sm:hidden" />
+  Meritorious Student Award
+</span>
           </div>
 
           <div className="flex items-center gap-2 sm:gap-4">
