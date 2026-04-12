@@ -13,7 +13,6 @@ export default async function HomePage() {
     data: { user },
   } = await supabase.auth.getUser()
 
-  // If user is authenticated, redirect to appropriate dashboard
   if (user) {
     const { data: profile } = await supabase.from("profiles").select("role").eq("id", user.id).single()
 
@@ -28,48 +27,51 @@ export default async function HomePage() {
     <div className="min-h-screen bg-background">
       {/* Header */}
       <header className="border-b sticky top-0 bg-background z-50">
-  <div className="container flex h-16 items-center justify-between px-4">
-    
-    <div className="flex items-center gap-3">
- <Image 
-  src="/logo.png" 
-  alt="Logo"
-  width={40}   // mobile
-  height={40}
-  className="object-contain sm:w-[48px] sm:h-[48px] md:w-[54px] md:h-[54px]"
-/>
-  <span className="text-[10px] sm:text-xs md:text-lg font-semibold tracking-tight leading-tight">
-  AchieveX Maitreyi - Application Portal for IQAC Meritorious Student Award
-</span>
-</div>
+        <div className="container flex h-20 sm:h-16 items-center justify-between px-4">
+          
+          <div className="flex items-center gap-3">
+            <Image 
+              src="/logo.png" 
+              alt="Logo"
+              width={46}
+              height={46}
+              className="object-contain sm:w-[48px] sm:h-[48px] md:w-[54px] md:h-[54px]"
+            />
+            <span className="text-[11px] sm:text-xs md:text-lg font-semibold tracking-tight leading-tight">
+              AchieveX Maitreyi - Application Portal for IQAC Meritorious Student Award
+            </span>
+          </div>
 
-    <div className="flex items-center gap-4">
-      <Link href="/auth/login">
-       <Button variant="ghost" className="h-8 px-3 text-xs sm:h-10 sm:px-4 sm:text-sm">
-  Login
-</Button>
-      </Link>
-      <Link href="/auth/sign-up">
-       <Button className="h-8 px-3 text-xs sm:h-10 sm:px-4 sm:text-sm">
-  Sign Up
-</Button>
-      </Link>
-    </div>
+          <div className="flex items-center gap-2 sm:gap-4">
+            <Link href="/auth/login">
+              <Button variant="ghost" className="h-8 px-3 text-xs sm:h-10 sm:px-4 sm:text-sm">
+                Login
+              </Button>
+            </Link>
+            <Link href="/auth/sign-up">
+              <Button className="h-8 px-3 text-xs sm:h-10 sm:px-4 sm:text-sm">
+                Sign Up
+              </Button> 
+            </Link>
+          </div>
 
-  </div>
-</header>
+        </div>
+      </header>
 
       {/* Hero Section */}
       <section className="container py-20 md:py-32">
         <div className="mx-auto max-w-3xl text-center">
-          <h1 className="text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl text-balance">
+          
+          <h1 className="text-2xl sm:text-5xl md:text-6xl font-bold tracking-tight text-balance">
             Track Your Academic Excellence
           </h1>
-          <p className="mt-6 text-lg text-muted-foreground text-balance">
+
+          <p className="mt-6 text-sm sm:text-lg text-muted-foreground text-balance">
             A comprehensive platform for students to collate and showcase their achievements each year. 
             This is also space for teachers to keep a tab on overall student performance and merit.
           </p>
-          <div className="mt-10 flex items-center justify-center gap-4">
+
+          <div className="mt-6 sm:mt-10 flex items-center justify-center gap-2 sm:gap-4">
             <Link href="/auth/sign-up">
               <Button size="lg">Get Started</Button>
             </Link>
@@ -79,23 +81,31 @@ export default async function HomePage() {
               </Button>
             </Link>
           </div>
+
         </div>
       </section>
 
       {/* Features Section */}
-      <section className="border-t bg-muted/40 py-20">
+      <section className="border-t bg-muted/40 py-12 sm:py-20">
         <div className="container">
-          <div className="mx-auto max-w-2xl text-center mb-16">
-            <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">Everything You Need</h2>
-            <p className="mt-4 text-muted-foreground">Powerful features for both students and Teachers</p>
+          <div className="mx-auto max-w-2xl text-center mb-8 sm:mb-16">
+            
+            <h2 className="text-xl sm:text-3xl font-bold tracking-tight sm:text-4xl">
+              Everything You Need
+            </h2>
+
+            <p className="mt-4 text-sm sm:text-base text-muted-foreground">
+              Powerful features for both students and Teachers
+            </p>
           </div>
 
           <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+
             <Card>
               <CardHeader>
                 <FileCheck className="h-10 w-10 text-primary mb-2" />
-                <CardTitle>Submit Achievements</CardTitle>
-                <CardDescription>
+                <CardTitle className="text-base sm:text-lg">Submit Achievements</CardTitle>
+                <CardDescription className="text-sm">
                   Easily submit your academic, sports, cultural, and technical achievements with proof documents
                 </CardDescription>
               </CardHeader>
@@ -104,8 +114,8 @@ export default async function HomePage() {
             <Card>
               <CardHeader>
                 <BarChart3 className="h-10 w-10 text-primary mb-2" />
-                <CardTitle>Track Progress</CardTitle>
-                <CardDescription>
+                <CardTitle className="text-base sm:text-lg">Track Progress</CardTitle>
+                <CardDescription className="text-sm">
                   Monitor your submissions, view approval status, and track your accumulated merit points
                 </CardDescription>
               </CardHeader>
@@ -114,8 +124,8 @@ export default async function HomePage() {
             <Card>
               <CardHeader>
                 <TrendingUp className="h-10 w-10 text-primary mb-2" />
-                <CardTitle>Merit Rankings</CardTitle>
-                <CardDescription>
+                <CardTitle className="text-base sm:text-lg">Merit Rankings</CardTitle>
+                <CardDescription className="text-sm">
                   View your merit ranking and percentile among peers based on approved achievements
                 </CardDescription>
               </CardHeader>
@@ -124,8 +134,8 @@ export default async function HomePage() {
             <Card>
               <CardHeader>
                 <Shield className="h-10 w-10 text-primary mb-2" />
-                <CardTitle>Admin Review</CardTitle>
-                <CardDescription>
+                <CardTitle className="text-base sm:text-lg">Admin Review</CardTitle>
+                <CardDescription className="text-sm">
                   Administrators can review submissions, approve or reject with feedback, and award points
                 </CardDescription>
               </CardHeader>
@@ -134,8 +144,8 @@ export default async function HomePage() {
             <Card>
               <CardHeader>
                 <Users className="h-10 w-10 text-primary mb-2" />
-                <CardTitle>Student Management</CardTitle>
-                <CardDescription>
+                <CardTitle className="text-base sm:text-lg">Student Management</CardTitle>
+                <CardDescription className="text-sm">
                   Comprehensive view of all students, their submissions, and achievement statistics
                 </CardDescription>
               </CardHeader>
@@ -144,12 +154,13 @@ export default async function HomePage() {
             <Card>
               <CardHeader>
                 <Award className="h-10 w-10 text-primary mb-2" />
-                <CardTitle>Automated Evaluation</CardTitle>
-                <CardDescription>
+                <CardTitle className="text-base sm:text-lg">Automated Evaluation</CardTitle>
+                <CardDescription className="text-sm">
                   Generate merit rankings automatically with calculated ranks and percentiles
                 </CardDescription>
               </CardHeader>
             </Card>
+
           </div>
         </div>
       </section>
@@ -157,8 +168,10 @@ export default async function HomePage() {
       {/* Achievement Categories Section */}
       <section className="container py-20">
         <div className="mx-auto max-w-2xl text-center mb-16">
-          <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">Achievement Categories</h2>
-          <p className="mt-4 text-muted-foreground">
+          <h2 className="text-2xl sm:text-3xl font-bold tracking-tight sm:text-4xl">
+            Achievement Categories
+          </h2>
+          <p className="mt-4 text-sm sm:text-base text-muted-foreground">
             Submit achievements across multiple categories to build your merit profile
           </p>
         </div>
@@ -192,8 +205,8 @@ export default async function HomePage() {
           ].map((category) => (
             <Card key={category.title}>
               <CardHeader>
-                <CardTitle className="text-lg">{category.title}</CardTitle>
-                <CardDescription>{category.description}</CardDescription>
+                <CardTitle className="text-base sm:text-lg">{category.title}</CardTitle>
+                <CardDescription className="text-sm">{category.description}</CardDescription>
               </CardHeader>
             </Card>
           ))}
@@ -204,8 +217,10 @@ export default async function HomePage() {
       <section className="border-t bg-primary text-primary-foreground py-20">
         <div className="container">
           <div className="mx-auto max-w-2xl text-center">
-            <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">Ready to Get Started?</h2>
-            <p className="mt-4 text-lg opacity-90">
+            <h2 className="text-2xl sm:text-3xl font-bold tracking-tight sm:text-4xl">
+              Ready to Get Started?
+            </h2>
+            <p className="mt-4 text-sm sm:text-lg opacity-90">
               Join the Student Merit Portal today and start tracking your achievements
             </p>
             <div className="mt-10 flex items-center justify-center gap-4">
@@ -221,7 +236,7 @@ export default async function HomePage() {
 
       {/* Footer */}
       <footer className="border-t py-8">
-        <div className="container text-center text-sm text-muted-foreground">
+        <div className="container text-center text-xs sm:text-sm text-muted-foreground">
           <p>&copy; 2025 Student Merit Portal. All rights reserved.</p>
         </div>
       </footer>
