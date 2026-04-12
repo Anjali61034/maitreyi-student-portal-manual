@@ -34,13 +34,13 @@ export default async function HomePage() {
   <Image 
     src="/logo.webp" 
     alt="Logo"
-    width={44}
-    height={44}
+    width={52}
+    height={52}
     className="object-contain"
   />
-  <span className="text-xs sm:text-sm md:text-lg font-semibold tracking-tight leading-tight">
-    AchieveX - Application Portal for IQAC Meritorious Student Award
-  </span>
+  <span className="text-[10px] sm:text-xs md:text-lg font-semibold tracking-tight leading-tight">
+  AchieveX - Application Portal for IQAC Meritorious Student Award
+</span>
 </div>
 
     <div className="flex items-center gap-4">
