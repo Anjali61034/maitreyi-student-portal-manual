@@ -31,17 +31,17 @@ export default async function HomePage() {
   <div className="container flex h-16 items-center justify-between px-4">
     
     <div className="flex items-center gap-3">
-      <Image 
-        src="/logo.webp" 
-        alt="Logo"
-        width={36}
-        height={36}
-        className="object-contain"
-      />
-      <span className="text-sm sm:text-lg font-semibold tracking-tight leading-tight">
-        AchieveX - Application Portal for IQAC Meritorious Student Award
-      </span>
-    </div>
+  <Image 
+    src="/logo.webp" 
+    alt="Logo"
+    width={44}
+    height={44}
+    className="object-contain"
+  />
+  <span className="text-xs sm:text-sm md:text-lg font-semibold tracking-tight leading-tight">
+    AchieveX - Application Portal for IQAC Meritorious Student Award
+  </span>
+</div>
 
     <div className="flex items-center gap-4">
       <Link href="/auth/login">
@@ -83,7 +83,7 @@ export default async function HomePage() {
         <div className="container">
           <div className="mx-auto max-w-2xl text-center mb-16">
             <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">Everything You Need</h2>
-            <p className="mt-4 text-muted-foreground">Powerful features for both students and administrators</p>
+            <p className="mt-4 text-muted-foreground">Powerful features for both students and Teachers</p>
           </div>
 
           <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
