@@ -39,8 +39,8 @@ export default async function HomePage() {
             />
             <span className="text-[13px] sm:text-xs md:text-lg font-semibold leading-tight">
               AchieveX - Maitreyi <br className="block sm:hidden" />
-              Application Portal for IQAC <br className="block sm:hidden" />
-              Meritorious Student Award
+              <br className="block sm:hidden" />
+              
             </span>
           </div>
 
@@ -63,14 +63,15 @@ export default async function HomePage() {
       {/* Hero Section */}
       <section className="container py-20 md:py-32">
         <div className="mx-auto max-w-3xl text-center">
-          
-          <h1 className="text-2xl sm:text-5xl md:text-6xl font-bold tracking-tight text-balance">
-            Track Your Academic Excellence
+           <h1 className="text-2xl sm:text-5xl md:text-6xl font-bold tracking-tight text-balance">
+            Application Portal for IQAC Meritorious Student Award
           </h1>
+          <h2 className="text-2xl sm:text-5xl md:text-2xl  tracking-tight text-balance">
+            Track Your Academic Excellence
+          </h2>
 
           <p className="mt-6 text-sm sm:text-lg text-muted-foreground text-balance">
-            A comprehensive platform for students to collate and showcase their achievements each year. 
-            This is also space for teachers to keep a tab on overall student performance and merit.
+           A comprehensive platform for students to collate and showcase their achievements each year and win the Meritorious Student Award. This is also a space for teachers to track and evaluate overall student performance and growth
           </p>
 
           <div className="mt-6 sm:mt-10 flex items-center justify-center gap-2 sm:gap-4">
