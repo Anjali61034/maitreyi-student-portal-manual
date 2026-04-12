@@ -38,10 +38,10 @@ export default async function HomePage() {
               className="object-contain sm:w-[48px] sm:h-[48px] md:w-[54px] md:h-[54px]"
             />
             <span className="text-[13px] sm:text-xs md:text-lg font-semibold leading-tight">
-  AchieveX - Maitreyi <br className="block sm:hidden" />
-  Application Portal for IQAC <br className="block sm:hidden" />
-  Meritorious Student Award
-</span>
+              AchieveX - Maitreyi <br className="block sm:hidden" />
+              Application Portal for IQAC <br className="block sm:hidden" />
+              Meritorious Student Award
+            </span>
           </div>
 
           <div className="flex items-center gap-2 sm:gap-4">
@@ -89,7 +89,8 @@ export default async function HomePage() {
 
       {/* Features Section */}
       <section className="border-t bg-muted/40 py-12 sm:py-20">
-        <div className="container">
+        {/* ✅ ONLY CHANGE HERE */}
+        <div className="container px-4 sm:px-6">
           <div className="mx-auto max-w-2xl text-center mb-8 sm:mb-16">
             
             <h2 className="text-xl sm:text-3xl font-bold tracking-tight sm:text-4xl">
@@ -169,49 +170,52 @@ export default async function HomePage() {
 
       {/* Achievement Categories Section */}
       <section className="container py-20">
-        <div className="mx-auto max-w-2xl text-center mb-16">
-          <h2 className="text-2xl sm:text-3xl font-bold tracking-tight sm:text-4xl">
-            Achievement Categories
-          </h2>
-          <p className="mt-4 text-sm sm:text-base text-muted-foreground">
-            Submit achievements across multiple categories to build your merit profile
-          </p>
-        </div>
+        {/* ✅ ONLY CHANGE HERE */}
+        <div className="container px-4 sm:px-6">
+          <div className="mx-auto max-w-2xl text-center mb-16">
+            <h2 className="text-2xl sm:text-3xl font-bold tracking-tight sm:text-4xl">
+              Achievement Categories
+            </h2>
+            <p className="mt-4 text-sm sm:text-base text-muted-foreground">
+              Submit achievements across multiple categories to build your merit profile
+            </p>
+          </div>
 
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {[
-            {
-              title: "Academic Excellence",
-              description: "First class grades, research publications, academic awards",
-            },
-            {
-              title: "Sports & Athletics",
-              description: "University, state, and national level sports achievements",
-            },
-            {
-              title: "Cultural Activities",
-              description: "Participation and wins in cultural events and competitions",
-            },
-            {
-              title: "Technical Skills",
-              description: "Hackathons, certifications, technical project achievements",
-            },
-            {
-              title: "Social Service",
-              description: "NSS, NCC, community service, and volunteer activities",
-            },
-            {
-              title: "Leadership",
-              description: "Student organization positions and leadership roles",
-            },
-          ].map((category) => (
-            <Card key={category.title}>
-              <CardHeader>
-                <CardTitle className="text-base sm:text-lg">{category.title}</CardTitle>
-                <CardDescription className="text-sm">{category.description}</CardDescription>
-              </CardHeader>
-            </Card>
-          ))}
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {[
+              {
+                title: "Academic Excellence",
+                description: "First class grades, research publications, academic awards",
+              },
+              {
+                title: "Sports & Athletics",
+                description: "University, state, and national level sports achievements",
+              },
+              {
+                title: "Cultural Activities",
+                description: "Participation and wins in cultural events and competitions",
+              },
+              {
+                title: "Technical Skills",
+                description: "Hackathons, certifications, technical project achievements",
+              },
+              {
+                title: "Social Service",
+                description: "NSS, NCC, community service, and volunteer activities",
+              },
+              {
+                title: "Leadership",
+                description: "Student organization positions and leadership roles",
+              },
+            ].map((category) => (
+              <Card key={category.title}>
+                <CardHeader>
+                  <CardTitle className="text-base sm:text-lg">{category.title}</CardTitle>
+                  <CardDescription className="text-sm">{category.description}</CardDescription>
+                </CardHeader>
+              </Card>
+            ))}
+          </div>
         </div>
       </section>
 
