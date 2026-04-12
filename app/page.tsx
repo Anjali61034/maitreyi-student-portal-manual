@@ -63,7 +63,7 @@ export default async function HomePage() {
       {/* Hero Section */}
       <section className="container py-20 md:py-32">
         <div className="mx-auto max-w-3xl text-center">
-           <h1 className="text-2xl sm:text-5xl md:text-6xl font-bold tracking-tight text-balance">
+           <h1 className="text-2xl sm:text-5xl md:text-4xl font-bold tracking-tight text-balance">
             Application Portal for IQAC  <br className="block sm:hidden" /> Meritorious Student Award
           </h1>
           <h2 className="text-2xl sm:text-5xl md:text-2xl  tracking-tight text-balance">
