@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Award, BarChart3, FileCheck, Shield, TrendingUp, Users } from "lucide-react"
 import Link from "next/link"
-import { redirect } from "next/navigation"
+import { redirect } from "next/navigation" 
 import Image from "next/image"
  
 export default async function HomePage() {
