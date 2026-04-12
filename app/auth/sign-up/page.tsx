@@ -32,7 +32,6 @@ const COURSE_LIST = [
   "B.Sc. Zoology (H)"
 ]
 
-// Logic to determine Stream based on Course
 const determineStream = (courseName: string): string => {
   const commerceCourses = [
     "B.A. Programme (Multidisciplinary)",
@@ -52,8 +51,6 @@ const determineStream = (courseName: string): string => {
 
   if (commerceCourses.includes(courseName)) return "commerce"
   if (scienceCourses.includes(courseName)) return "science"
-  
-  // Default to humanities for remaining B.A. (Hons) courses
   return "humanities"
 }
 
@@ -66,16 +63,16 @@ export default function SignUpPage() {
     role: "student",
     studentId: "",
     courseName: "",
-    stream: "", 
+    stream: "",
     yearOfStudy: "",
     phone: "",
-    adminCode: "", // NEW: Added admin code state
+    adminCode: "",
   })
+
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
 
-  // --- EFFECT: Auto-fill Stream when Course changes ---
   useEffect(() => {
     if (formData.courseName) {
       const autoStream = determineStream(formData.courseName)
@@ -96,62 +93,80 @@ export default function SignUpPage() {
     }
 
     if (formData.role === "student" && !formData.studentId) {
-      setError("Student ID is required for student accounts")
+      setError("Student ID is required")
       setIsLoading(false)
       return
     }
 
-    // NEW: Admin Code Verification Logic
+    // ✅ PRE-CHECK FOR DUPLICATE ROLL NO
+    if (formData.role === "student") {
+      const { data: existing } = await supabase
+        .from("profiles")
+        .select("id")
+        .eq("student_id", formData.studentId.trim())
+        .maybeSingle()
+
+      if (existing) {
+        setError("Roll number already exists")
+        setIsLoading(false)
+        return
+      }
+    }
+
+    // Admin Code Check
     if (formData.role === "admin") {
-      const { data: isValid, error: rpcError } = await supabase.rpc('verify_admin_code', { 
-        input_code: formData.adminCode 
+      const { data: isValid } = await supabase.rpc("verify_admin_code", {
+        input_code: formData.adminCode,
       })
 
-      if (rpcError || !isValid) {
-        setError("Invalid Admin Code. Registration failed.")
+      if (!isValid) {
+        setError("Invalid Admin Code")
         setIsLoading(false)
         return
       }
     }
 
     try {
-  const { error } = await supabase.auth.signUp({
-    email: formData.email,
-    password: formData.password,
-    options: {
-      emailRedirectTo:
-        process.env.NEXT_PUBLIC_DEV_SUPABASE_REDIRECT_URL ||
-        `${window.location.origin}/dashboard`,
-      data: {
-        full_name: formData.fullName,
-        role: formData.role,
-        student_id: formData.studentId.trim() || null,
-        course_name: formData.courseName || null,
-        stream: formData.stream || null,
-        year_of_study: formData.yearOfStudy
-          ? Number.parseInt(formData.yearOfStudy)
-          : null,
-        phone: formData.phone || null,
-      },
-    },
-  })
+      const { error } = await supabase.auth.signUp({
+        email: formData.email,
+        password: formData.password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/dashboard`,
+          data: {
+            full_name: formData.fullName,
+            role: formData.role,
+            student_id: formData.studentId.trim() || null,
+            course_name: formData.courseName || null,
+            stream: formData.stream || null,
+            year_of_study: formData.yearOfStudy
+              ? Number.parseInt(formData.yearOfStudy)
+              : null,
+            phone: formData.phone || null,
+          },
+        },
+      })
 
-  if (error) throw error
+      if (error) throw error
 
-  router.push("/dashboard")
-} catch (error: any) {
-  console.log(error)
+      router.push("/dashboard")
+    } catch (error: any) {
+      console.log(error)
 
-  const msg = error?.message?.toLowerCase?.() || ""
+      const msg = error?.message?.toLowerCase?.() || ""
 
-  if (msg.includes("duplicate") || msg.includes("unique")) {
-    setError("This Roll Number is already registered")
-  } else {
-    setError(error?.message || "Something went wrong")
-  }
-} finally {
-  setIsLoading(false)
-}}
+      if (
+        msg.includes("duplicate") ||
+        msg.includes("unique") ||
+        msg.includes("database error saving new user")
+      ) {
+        setError("Roll number already exists")
+      } else {
+        setError(error?.message || "Something went wrong")
+      }
+    } finally {
+      setIsLoading(false)
+    }
+  } // ✅ FUNCTION CLOSED PROPERLY
   return (
     <div className="flex min-h-svh w-full items-center justify-center p-6 md:p-10">
       <div className="w-full max-w-2xl">
