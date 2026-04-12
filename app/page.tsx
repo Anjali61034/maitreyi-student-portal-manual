@@ -69,8 +69,8 @@ export default async function HomePage() {
           </h1>
           <br className="block sm:hidden" />
             <h2 className="text-xl sm:text-2xl md:text-2xl text-gray-600">
-      Track Your Academic Excellence
-    </h2>
+      Track Your Academic Excellence</h2>
+    
 
           
           <p className="mt-6 text-sm sm:text-lg text-muted-foreground text-balance">
