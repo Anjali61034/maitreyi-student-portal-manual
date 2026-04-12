@@ -39,6 +39,7 @@ export default async function HomePage() {
             />
             <span className="text-[24px] text-green-600 md:text-lg font-semibold leading-tight">
               AchieveX - Maitreyi <br className="block sm:hidden" />
+              <br className="block sm:hidden" /br>
               
               
             </span>
