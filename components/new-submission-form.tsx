@@ -147,6 +147,7 @@ export function NewSubmissionForm() {
       let details = description
       let finalTitle = title
       let finalDate = date
+      let isCappedFlag = false
 
       // 1. CGPA EVALUATION
       if (category === "cgpa_evaluation") {
@@ -191,9 +192,10 @@ export function NewSubmissionForm() {
 
       // If the new points exceed the remaining space, cap them and show warning
       if (pointsToAward > remainingPoints) {
-        pointsToAward = remainingPoints
-        setIsCapped(true)
-      }
+  pointsToAward = remainingPoints
+  setIsCapped(true)
+  isCappedFlag = true // ✅ ADD THIS
+}
       // --- END OF UPDATED LOGIC ---
 
       // FILE UPLOAD
@@ -239,6 +241,7 @@ export function NewSubmissionForm() {
         status: "approved",
         achievement_scope: achievementRank || null, 
         activity_type: activityTypeToSave, 
+        is_capped: isCappedFlag,
       })
 
       if (insertError) throw insertError
