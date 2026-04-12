@@ -30,7 +30,7 @@ export default async function HomePage() {
         <div className="container flex h-16 items-center justify-between">
           <div className="flex items-center gap-2">
             <Award className="h-6 w-6 text-primary" />
-            <span className="text-xl font-bold">Student Merit Portal</span>
+            <span className="text-xl font-bold">AchieveX- Application For IQAC  Meritorious Student Award</span>
           </div>
           <div className="flex items-center gap-4">
             <Link href="/auth/login">
