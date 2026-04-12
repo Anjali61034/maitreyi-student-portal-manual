@@ -32,10 +32,10 @@ export default async function HomePage() {
     
     <div className="flex items-center gap-3">
   <Image 
-    src="/logo.webp" 
+    src="/logo.png" 
     alt="Logo"
-    width={58}
-    height={58}
+    width={54}
+    height={54}
     className="object-contain"
   />
   <span className="text-[10px] sm:text-xs md:text-lg font-semibold tracking-tight leading-tight">
