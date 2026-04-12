@@ -31,24 +31,28 @@ export default async function HomePage() {
   <div className="container flex h-16 items-center justify-between px-4">
     
     <div className="flex items-center gap-3">
-  <Image 
-    src="/logo.png" 
-    alt="Logo"
-    width={54}
-    height={54}
-    className="object-contain"
-  />
+ <Image 
+  src="/logo.png" 
+  alt="Logo"
+  width={40}   // mobile
+  height={40}
+  className="object-contain sm:w-[48px] sm:h-[48px] md:w-[54px] md:h-[54px]"
+/>
   <span className="text-[10px] sm:text-xs md:text-lg font-semibold tracking-tight leading-tight">
-  AchieveX - Application Portal for IQAC Meritorious Student Award
+  AchieveX Maitreyi - Application Portal for IQAC Meritorious Student Award
 </span>
 </div>
 
     <div className="flex items-center gap-4">
       <Link href="/auth/login">
-        <Button variant="ghost">Login</Button>
+       <Button variant="ghost" className="h-8 px-3 text-xs sm:h-10 sm:px-4 sm:text-sm">
+  Login
+</Button>
       </Link>
       <Link href="/auth/sign-up">
-        <Button>Sign Up</Button> 
+       <Button className="h-8 px-3 text-xs sm:h-10 sm:px-4 sm:text-sm">
+  Sign Up
+</Button>
       </Link>
     </div>
 
