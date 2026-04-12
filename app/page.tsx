@@ -66,11 +66,11 @@ export default async function HomePage() {
            <h1 className="text-2xl sm:text-5xl md:text-4xl font-bold tracking-tight text-balance">
             Application Portal for IQAC  <br className="block sm:hidden" /> Meritorious Student Award
           </h1>
-          <br><br>
-           <p
-          <h2 className="text-2xl sm:text-5xl md:text-2xl  tracking-tight text-balance">
-            Track Your Academic Excellence
-          </h2>
+         
+            <h2 className="text-xl sm:text-2xl md:text-2xl text-gray-600">
+      Track Your Academic Excellence
+    </h2>
+
           </p>
           <p className="mt-6 text-sm sm:text-lg text-muted-foreground text-balance">
            A comprehensive platform for students to collate and showcase their achievements each year and win the Meritorious Student Award. This is also a space for teachers to track and evaluate overall student performance and growth
