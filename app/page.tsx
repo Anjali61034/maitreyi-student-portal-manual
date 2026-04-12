@@ -4,6 +4,7 @@ import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/ca
 import { Award, BarChart3, FileCheck, Shield, TrendingUp, Users } from "lucide-react"
 import Link from "next/link"
 import { redirect } from "next/navigation"
+import Image from "next/image"
 
 export default async function HomePage() {
   const supabase = await createClient()
@@ -28,10 +29,18 @@ export default async function HomePage() {
       {/* Header */}
       <header className="border-b">
         <div className="container flex h-16 items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Award className="h-6 w-6 text-primary" />
-            <span className="text-xl font-bold">AchieveX- Award</span>
-          </div>
+          <div className="flex items-center gap-3">
+  <Image 
+    src="/logo.webp" 
+    alt="Logo"
+    width={36}
+    height={36}
+    className="object-contain"
+  />
+  <section className="container pt-24 pb-20 md:pt-32 md:pb-32">
+    AchieveX-Application Portal for IQAC Meritorious Student Award
+  </span>
+</div>
           <div className="flex items-center gap-4">
             <Link href="/auth/login">
               <Button variant="ghost">Login</Button>
@@ -47,7 +56,7 @@ export default async function HomePage() {
       <section className="container py-20 md:py-32">
         <div className="mx-auto max-w-3xl text-center">
           <h1 className="text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl text-balance">
-            Track Yours Academic Excellence
+            Track Your Academic Excellence
           </h1>
           <p className="mt-6 text-lg text-muted-foreground text-balance">
             A comprehensive platform for students to showcase their achievements and for administrators to evaluate
