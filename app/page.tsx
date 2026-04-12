@@ -5,7 +5,7 @@ import { Award, BarChart3, FileCheck, Shield, TrendingUp, Users } from "lucide-r
 import Link from "next/link"
 import { redirect } from "next/navigation"
 import Image from "next/image"
-
+ 
 export default async function HomePage() {
   const supabase = await createClient()
 
