@@ -208,7 +208,8 @@ export function NewSubmissionForm() {
         const safeName = profile?.full_name
           ?.replace(/[^a-zA-Z0-9 ]/g, "")
           .replace(/\s+/g, "_") || "student"
-        const rollNo = profile?.student_id || "unknown"
+        const rollNo = profile?.student_id
+          ?.replace(/\//g, "_") || "unknown"
         const fileName = `${safeName}_${rollNo}/${Date.now()}.${fileExt}`
 
         const { error: uploadError } = await supabase.storage
