@@ -123,7 +123,7 @@ export default function SignUpPage() {
           data: {
             full_name: formData.fullName,
             role: formData.role,
-            student_id: formData.studentId || null,
+            student_id: formData.studentId.trim() || null,
             course_name: formData.courseName || null,
             stream: formData.stream || null, // Will be "commerce", "science", or "humanities"
             year_of_study: formData.yearOfStudy ? Number.parseInt(formData.yearOfStudy) : null,
@@ -131,15 +131,22 @@ export default function SignUpPage() {
           },
         },
       })
-      if (error) throw error
-      router.push("/dashboard")
-    } catch (error: unknown) {
-      setError(error instanceof Error ? error.message : "An error occurred")
-    } finally {
-      setIsLoading(false)
-    }
-  }
+    if (error) throw error
+router.push("/dashboard")
+} catch (error: any) {
+  console.log(error)
 
+  if (
+    error?.message?.toLowerCase().includes("duplicate") ||
+    error?.message?.toLowerCase().includes("unique")
+  ) {
+    setError("This Roll Number is already registered")
+  } else {
+    setError(error?.message || "Something went wrong")
+  }
+} finally {
+  setIsLoading(false)
+}
   return (
     <div className="flex min-h-svh w-full items-center justify-center p-6 md:p-10">
       <div className="w-full max-w-2xl">
