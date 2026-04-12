@@ -71,7 +71,7 @@ export default async function HomePage() {
       Track Your Academic Excellence
     </h2>
 
-          </p>
+          
           <p className="mt-6 text-sm sm:text-lg text-muted-foreground text-balance">
            A comprehensive platform for students to collate and showcase their achievements each year and win the Meritorious Student Award. This is also a space for teachers to track and evaluate overall student performance and growth
           </p>
