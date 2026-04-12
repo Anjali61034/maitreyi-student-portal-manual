@@ -37,7 +37,7 @@ export default async function HomePage() {
               height={46}
               className="object-contain sm:w-[48px] sm:h-[48px] md:w-[54px] md:h-[54px]"
             />
-            <span className="text-[24px] text-green-600 md:text-lg font-semibold leading-tight">
+            <span className="text-[20px] text-green-600 md:text-lg font-semibold leading-tight">
               AchieveX - Maitreyi <br className="block sm:hidden" />
               <br className="block sm:hidden" /br>
               
