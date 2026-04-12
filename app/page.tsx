@@ -37,7 +37,7 @@ export default async function HomePage() {
               <Button variant="ghost">Login</Button>
             </Link>
             <Link href="/auth/sign-up">
-              <Button>Sign Up</Button>
+              <Button>Sign Up</Button> 
             </Link>
           </div>
         </div>
