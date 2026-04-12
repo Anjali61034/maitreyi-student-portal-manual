@@ -38,8 +38,8 @@ export default async function HomePage() {
               className="object-contain sm:w-[48px] sm:h-[48px] md:w-[54px] md:h-[54px]"
             />
             <span className="text-[16px] text-green-600 md:text-lg font-semibold leading-tight">
-              AchieveX - Maitreyi <br className="block sm:hidden" />
-              <br className="block sm:hidden" />
+              AchieveX- Maitreyi <br className="block sm:hidden" />
+              
               
               
             </span>
