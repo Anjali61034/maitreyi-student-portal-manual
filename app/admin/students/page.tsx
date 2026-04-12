@@ -342,7 +342,7 @@ export default function AdminStudentsPage() {
                            
                            {sub.is_capped && (
                         <span className="text-xs text-orange-600"> ⚠ Capped to max (5) </span>)}
-                           <span className="text-[10px] text-muted-foreground uppercase font-semibold"> Points </span></div>
+                           <span className="text-[10px] text-muted-foreground uppercase font-semibold"> Points </span></div></div>  
                         
                         {/* --- VISIBILITY FOR LEVEL & SCOPE --- */}
                         <div className="flex flex-wrap gap-2 mb-4">
