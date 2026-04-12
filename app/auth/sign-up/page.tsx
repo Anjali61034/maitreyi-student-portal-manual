@@ -115,31 +115,36 @@ export default function SignUpPage() {
     }
 
     try {
-      const { error } = await supabase.auth.signUp({
-        email: formData.email,
-        password: formData.password,
-        options: {
-          emailRedirectTo: process.env.NEXT_PUBLIC_DEV_SUPABASE_REDIRECT_URL || `${window.location.origin}/dashboard`,
-          data: {
-            full_name: formData.fullName,
-            role: formData.role,
-            student_id: formData.studentId.trim() || null,
-            course_name: formData.courseName || null,
-            stream: formData.stream || null, // Will be "commerce", "science", or "humanities"
-            year_of_study: formData.yearOfStudy ? Number.parseInt(formData.yearOfStudy) : null,
-            phone: formData.phone || null,
-          },
-        },
-      })
-    if (error) throw error
-router.push("/dashboard")
+  const { error } = await supabase.auth.signUp({
+    email: formData.email,
+    password: formData.password,
+    options: {
+      emailRedirectTo:
+        process.env.NEXT_PUBLIC_DEV_SUPABASE_REDIRECT_URL ||
+        `${window.location.origin}/dashboard`,
+      data: {
+        full_name: formData.fullName,
+        role: formData.role,
+        student_id: formData.studentId.trim() || null,
+        course_name: formData.courseName || null,
+        stream: formData.stream || null,
+        year_of_study: formData.yearOfStudy
+          ? Number.parseInt(formData.yearOfStudy)
+          : null,
+        phone: formData.phone || null,
+      },
+    },
+  })
+
+  if (error) throw error
+
+  router.push("/dashboard")
 } catch (error: any) {
   console.log(error)
 
-  if (
-    error?.message?.toLowerCase().includes("duplicate") ||
-    error?.message?.toLowerCase().includes("unique")
-  ) {
+  const msg = error?.message?.toLowerCase?.() || ""
+
+  if (msg.includes("duplicate") || msg.includes("unique")) {
     setError("This Roll Number is already registered")
   } else {
     setError(error?.message || "Something went wrong")
