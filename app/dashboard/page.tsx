@@ -144,7 +144,7 @@ export default async function DashboardPage() {
             <div>
               <p className="font-semibold text-orange-900">Deadline Notice</p>
               <p className="text-orange-800">
-                This should be filled by next monday i.e 4 May,2026.
+                This should be filled by next monday i.e 2nd May,2026.
               </p>
             </div>
           </div>
