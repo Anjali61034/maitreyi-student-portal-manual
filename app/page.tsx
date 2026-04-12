@@ -100,7 +100,7 @@ export default async function HomePage() {
             </h2>
 
             <p className="mt-4 text-sm sm:text-base text-muted-foreground">
-              Powerful features for both students and Teachers
+              Powerful features for both students and teachers
             </p>
           </div>
 
