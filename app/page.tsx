@@ -27,30 +27,33 @@ export default async function HomePage() {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="border-b">
-        <div className="container flex h-16 items-center justify-between">
-          <div className="flex items-center gap-3">
-  <Image 
-    src="/logo.webp" 
-    alt="Logo"
-    width={36}
-    height={36}
-    className="object-contain"
-  />
-  <section className="container pt-24 pb-20 md:pt-32 md:pb-32">
-    AchieveX-Application Portal for IQAC Meritorious Student Award
-  </span>
-</div>
-          <div className="flex items-center gap-4">
-            <Link href="/auth/login">
-              <Button variant="ghost">Login</Button>
-            </Link>
-            <Link href="/auth/sign-up">
-              <Button>Sign Up</Button> 
-            </Link>
-          </div>
-        </div>
-      </header>
+      <header className="border-b sticky top-0 bg-background z-50">
+  <div className="container flex h-16 items-center justify-between px-4">
+    
+    <div className="flex items-center gap-3">
+      <Image 
+        src="/logo.webp" 
+        alt="Logo"
+        width={36}
+        height={36}
+        className="object-contain"
+      />
+      <span className="text-sm sm:text-lg font-semibold tracking-tight leading-tight">
+        AchieveX - Application Portal for IQAC Meritorious Student Award
+      </span>
+    </div>
+
+    <div className="flex items-center gap-4">
+      <Link href="/auth/login">
+        <Button variant="ghost">Login</Button>
+      </Link>
+      <Link href="/auth/sign-up">
+        <Button>Sign Up</Button> 
+      </Link>
+    </div>
+
+  </div>
+</header>
 
       {/* Hero Section */}
       <section className="container py-20 md:py-32">
@@ -59,8 +62,8 @@ export default async function HomePage() {
             Track Your Academic Excellence
           </h1>
           <p className="mt-6 text-lg text-muted-foreground text-balance">
-            A comprehensive platform for students to showcase their achievements and for administrators to evaluate
-            merit rankings based on academic, sports, cultural, and technical accomplishments.
+            A comprehensive platform for students to collate and showcase their achievements each year. 
+            This is also space for teachers to keep a tab on overall student performance and merit.
           </p>
           <div className="mt-10 flex items-center justify-center gap-4">
             <Link href="/auth/sign-up">
