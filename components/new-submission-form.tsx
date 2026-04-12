@@ -124,6 +124,13 @@ export function NewSubmissionForm() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) throw new Error("Not authenticated")
 
+      // ✅ ADD THIS HERE
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("full_name, student_id")
+          .eq("id", user.id)
+          .single()
+
       if (category !== "cgpa_evaluation") {
         const selectedDate = new Date(date)
         const academicStart = new Date("2025-01-01")
@@ -155,7 +162,7 @@ export function NewSubmissionForm() {
         finalCategory = "CGPA Evaluation"
       } 
       // 2. INDUSTRY EXPERIENCE
-      else if (category === "industry") {
+      else if (category === "industry_experience") {
         pointsToAward = INDUSTRY_POINTS[industryLevel as keyof typeof INDUSTRY_POINTS] || 0
         finalCategory = "Industry Experience"
       } 
@@ -198,7 +205,11 @@ export function NewSubmissionForm() {
          }
       if (proofFile) {
         const fileExt = proofFile.name.split(".").pop()
-        const fileName = `${user.id}/${Date.now()}.${fileExt}`
+        const safeName = profile?.full_name
+          ?.replace(/[^a-zA-Z0-9 ]/g, "")
+          .replace(/\s+/g, "_") || "student"
+        const rollNo = profile?.student_id || "unknown"
+        const fileName = `${safeName}_${rollNo}/${Date.now()}.${fileExt}`
 
         const { error: uploadError } = await supabase.storage
           .from("achievement-proofs")
@@ -230,6 +241,13 @@ export function NewSubmissionForm() {
       })
 
       if (insertError) throw insertError
+
+         // 👉 ADD THIS BELOW
+      await supabase.from("merit_evaluations").insert({
+        student_id: user.id,
+        total_points: pointsToAward,
+        academic_year: "2026"
+      })
 
       router.push("/dashboard/submissions")
     } catch (error: unknown) {
@@ -366,7 +384,7 @@ export function NewSubmissionForm() {
           )}
 
           {/* 2. INDUSTRY EXPERIENCE INPUTS */}
-          {category === "industry" && (
+          {category === "industry_experience" && (
             <div className="grid gap-2">
               <Label>Experience Level</Label>
               <Select value={industryLevel} onValueChange={setIndustryLevel}>
