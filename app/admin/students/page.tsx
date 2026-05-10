@@ -53,11 +53,10 @@ export default function AdminStudentsPage() {
         .eq("role", "student")
 
       // 2. Fetch ALL submissions at once (Optimized)
-      const { data: submissionsData } = await supabase
+    const { data: submissionsData } = await supabase
   .from("submissions")
   .select("*")
-  .order("created_at", { ascending: false })
-  .limit(5000)
+  .range(0, 10000)
 
       setStudents(studentsData || [])
       setAllSubmissions(submissionsData || [])
