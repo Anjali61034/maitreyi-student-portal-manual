@@ -6,7 +6,11 @@ export default async function AdminDashboardPage() {
   const supabase = await createClient()
 
   // Get statistics
-  const { data: allSubmissions } = await supabase.from("submissions").select("*")
+  const { count } = await supabase
+  .from("submissions")
+  .select("*", { count: "exact", head: true })
+
+const totalSubmissions = count || 0
   const { data: students } = await supabase.from("profiles").select("*").eq("role", "student")
 
   const totalSubmissions = allSubmissions?.length || 0
