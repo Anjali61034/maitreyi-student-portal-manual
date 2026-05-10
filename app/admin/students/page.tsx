@@ -67,6 +67,7 @@ export default function AdminStudentsPage() {
     fetchData()
   }, [supabase])
 
+
   // --- HELPER: Get Badge Label based on Stored Activity Type ---
   const getLevelBadge = (sub: any) => {
     // We now rely on the explicit 'activity_type' column stored in the DB
