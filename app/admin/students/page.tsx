@@ -53,10 +53,10 @@ export default function AdminStudentsPage() {
         .eq("role", "student")
 
       // 2. Fetch ALL submissions at once (Optimized)
-    const { data: submissionsData } = await supabase
-  .from("submissions")
-  .select("*")
-  .range(0, 10000)
+      const { data: submissionsData } = await supabase
+        .from("submissions")
+        .select("*")
+        .range(0, 10000)
 
       setStudents(studentsData || [])
       setAllSubmissions(submissionsData || [])
@@ -66,7 +66,6 @@ export default function AdminStudentsPage() {
     fetchData()
   }, [supabase])
 
-
   // --- HELPER: Get Badge Label based on Stored Activity Type ---
   const getLevelBadge = (sub: any) => {
     // We now rely on the explicit 'activity_type' column stored in the DB
@@ -74,8 +73,8 @@ export default function AdminStudentsPage() {
 
     // Fallback for old data if it doesn't have activity_type yet
     if (!type) {
-       // Simple fallback based on points if type is missing
-       return <Badge variant="outline">{sub.points_awarded} pts</Badge>
+      // Simple fallback based on points if type is missing
+      return <Badge variant="outline">{sub.points_awarded} pts</Badge>
     }
 
     switch (type) {
@@ -125,28 +124,68 @@ export default function AdminStudentsPage() {
     }
   })
 
-  const uniqueCourses = Array.from(new Set(students.map(s => s.course_name).filter(Boolean))).sort()
-  const uniqueYears = Array.from(new Set(students.map(s => s.year_of_study).filter(Boolean))).sort((a, b) => a - b)
+  const uniqueCourses = Array.from(
+    new Set(students.map((s) => s.course_name).filter(Boolean))
+  ).sort()
+
+  const uniqueYears = Array.from(
+    new Set(students.map((s) => s.year_of_study).filter(Boolean))
+  ).sort((a, b) => a - b)
 
   const filteredStudents = studentsWithStats.filter((student) => {
-    const matchCourse = filterCourse === "all" || student.course_name === filterCourse
-    const matchYear = filterYear === "all" || student.year_of_study?.toString() === filterYear
+    const matchCourse =
+      filterCourse === "all" || student.course_name === filterCourse
+
+    const matchYear =
+      filterYear === "all" ||
+      student.year_of_study?.toString() === filterYear
+
     return matchCourse && matchYear
   })
 
-  const sortedStudents = [...filteredStudents].sort((a, b) => b.totalPoints - a.totalPoints)
+  const sortedStudents = [...filteredStudents].sort(
+    (a, b) => b.totalPoints - a.totalPoints
+  )
 
   useEffect(() => {
     if (selectedStudent && selectedStudent.submissions) {
-      setActiveCategory("") 
+      setActiveCategory("")
     }
   }, [selectedStudent])
+
+  useEffect(() => {
+    if (
+      selectedStudent?.submissions?.length > 0 &&
+      !activeCategory
+    ) {
+      const groupedData = selectedStudent.submissions.reduce(
+        (acc: any, sub: any) => {
+          if (!acc[sub.category]) {
+            acc[sub.category] = []
+          }
+
+          acc[sub.category].push(sub)
+
+          return acc
+        },
+        {}
+      )
+
+      const firstCategory = Object.keys(groupedData)[0]
+
+      if (firstCategory) {
+        setActiveCategory(firstCategory)
+      }
+    }
+  }, [selectedStudent, activeCategory])
 
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-bold">Students</h1>
-        <p className="text-muted-foreground">Manage students and review achievements</p>
+        <p className="text-muted-foreground">
+          Manage students and review achievements
+        </p>
       </div>
 
       {/* Filters Section */}
@@ -154,39 +193,66 @@ export default function AdminStudentsPage() {
         <CardContent className="pt-6">
           <div className="flex flex-wrap gap-4">
             <div className="w-full md:w-1/3">
-              <label className="text-sm font-medium mb-1 block">Filter by Course</label>
-              <Select value={filterCourse} onValueChange={setFilterCourse}>
+              <label className="text-sm font-medium mb-1 block">
+                Filter by Course
+              </label>
+
+              <Select
+                value={filterCourse}
+                onValueChange={setFilterCourse}
+              >
                 <SelectTrigger>
                   <SelectValue placeholder="All Courses" />
                 </SelectTrigger>
+
                 <SelectContent>
                   <SelectItem value="all">All Courses</SelectItem>
+
                   {uniqueCourses.map((course) => (
-                    <SelectItem key={course} value={course}>{course}</SelectItem>
+                    <SelectItem key={course} value={course}>
+                      {course}
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
 
             <div className="w-full md:w-1/4">
-              <label className="text-sm font-medium mb-1 block">Filter by Year</label>
-              <Select value={filterYear} onValueChange={setFilterYear}>
+              <label className="text-sm font-medium mb-1 block">
+                Filter by Year
+              </label>
+
+              <Select
+                value={filterYear}
+                onValueChange={setFilterYear}
+              >
                 <SelectTrigger>
                   <SelectValue placeholder="All Years" />
                 </SelectTrigger>
+
                 <SelectContent>
                   <SelectItem value="all">All Years</SelectItem>
+
                   {uniqueYears.map((year) => (
-                    <SelectItem key={year} value={year.toString()}>Year {year}</SelectItem>
+                    <SelectItem
+                      key={year}
+                      value={year.toString()}
+                    >
+                      Year {year}
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
-            
+
             <div className="w-full md:w-1/4 flex items-end">
-               <p className="text-sm text-muted-foreground">
-                  Showing <span className="font-bold text-foreground">{sortedStudents.length}</span> students
-               </p>
+              <p className="text-sm text-muted-foreground">
+                Showing{" "}
+                <span className="font-bold text-foreground">
+                  {sortedStudents.length}
+                </span>{" "}
+                students
+              </p>
             </div>
           </div>
         </CardContent>
@@ -194,12 +260,14 @@ export default function AdminStudentsPage() {
 
       {/* Student List */}
       {loading ? (
-        <div className="text-center py-10 text-muted-foreground">Loading student data...</div>
+        <div className="text-center py-10 text-muted-foreground">
+          Loading student data...
+        </div>
       ) : (
         <div className="space-y-4">
           {sortedStudents.map((student) => (
-            <Card 
-              key={student.id} 
+            <Card
+              key={student.id}
               className="cursor-pointer hover:border-primary transition-colors"
               onClick={() => setSelectedStudent(student)}
             >
@@ -207,20 +275,42 @@ export default function AdminStudentsPage() {
                 <div className="flex items-start justify-between">
                   <div className="space-y-1 flex-1">
                     <div className="flex items-center gap-2">
-                      <h3 className="font-semibold text-lg">{student.full_name}</h3>
-                      <Badge variant="secondary">{student.totalPoints} pts</Badge>
+                      <h3 className="font-semibold text-lg">
+                        {student.full_name}
+                      </h3>
+
+                      <Badge variant="secondary">
+                        {student.totalPoints} pts
+                      </Badge>
                     </div>
+
                     <p className="text-sm text-muted-foreground">
-                      {student.student_id} • {student.course_name || "Course not set"} • Year {student.year_of_study || "N/A"}
+                      {student.student_id} •{" "}
+                      {student.course_name || "Course not set"} • Year{" "}
+                      {student.year_of_study || "N/A"}
                     </p>
-                    <p className="text-xs text-muted-foreground">{student.email}</p>
-                    
+
+                    <p className="text-xs text-muted-foreground">
+                      {student.email}
+                    </p>
+
                     <div className="flex gap-4 text-xs text-muted-foreground mt-2">
-                      <span>Submissions: <strong className="text-foreground">{student.totalSubmissions}</strong></span>
-                      <span>Approved: <strong className="text-green-600">{student.approvedSubmissions}</strong></span>
+                      <span>
+                        Submissions:{" "}
+                        <strong className="text-foreground">
+                          {student.totalSubmissions}
+                        </strong>
+                      </span>
+
+                      <span>
+                        Approved:{" "}
+                        <strong className="text-green-600">
+                          {student.approvedSubmissions}
+                        </strong>
+                      </span>
                     </div>
                   </div>
-                  
+
                   <div className="text-muted-foreground">
                     <FileText size={20} />
                   </div>
@@ -228,35 +318,48 @@ export default function AdminStudentsPage() {
               </CardContent>
             </Card>
           ))}
-          
+
           {sortedStudents.length === 0 && !loading && (
-             <Card>
-               <CardContent className="pt-10 pb-10 text-center text-muted-foreground">
-                 No students found matching the selected filters.
-               </CardContent>
-             </Card>
+            <Card>
+              <CardContent className="pt-10 pb-10 text-center text-muted-foreground">
+                No students found matching the selected filters.
+              </CardContent>
+            </Card>
           )}
         </div>
       )}
 
       {/* --- STUDENT DETAILS DIALOG --- */}
-      <Dialog open={!!selectedStudent} onOpenChange={() => setSelectedStudent(null)}>
+      <Dialog
+        open={!!selectedStudent}
+        onOpenChange={() => setSelectedStudent(null)}
+      >
         <DialogContent className="!w-[80vw] !max-w-none h-[85vh] overflow-hidden p-0 flex flex-col">
           
           {/* Dialog Header */}
           <DialogHeader className="px-6 py-4 border-b flex-shrink-0 bg-white">
             <DialogTitle className="flex items-center justify-between">
-              <span className="text-2xl">{selectedStudent?.full_name}'s Achievements</span>
-              <Badge variant="outline" className="text-sm">Total: {selectedStudent?.totalPoints} pts</Badge>
+              <span className="text-2xl">
+                {selectedStudent?.full_name}'s Achievements
+              </span>
+
+              <Badge variant="outline" className="text-sm">
+                Total: {selectedStudent?.totalPoints} pts
+              </Badge>
             </DialogTitle>
+
             <DialogDescription>
-              {selectedStudent?.course_name} • Year {selectedStudent?.year_of_study}
+              {selectedStudent?.course_name} • Year{" "}
+              {selectedStudent?.year_of_study}
             </DialogDescription>
           </DialogHeader>
 
           {/* Main Content Area */}
           {(() => {
-            if (!selectedStudent?.submissions || selectedStudent.submissions.length === 0) {
+            if (
+              !selectedStudent?.submissions ||
+              selectedStudent.submissions.length === 0
+            ) {
               return (
                 <div className="flex-1 flex items-center justify-center text-muted-foreground">
                   No submissions yet.
@@ -264,26 +367,37 @@ export default function AdminStudentsPage() {
               )
             }
 
-            const groupedData = selectedStudent.submissions.reduce((acc: any, sub: any) => {
-              if (!acc[sub.category]) {
-                acc[sub.category] = { points: 0, items: [] }
-              }
-              if (sub.status === 'approved') {
-                acc[sub.category].points += (sub.points_awarded || 0)
-              }
-              acc[sub.category].items.push(sub)
-              return acc
-            }, {})
+            const groupedData = selectedStudent.submissions.reduce(
+              (acc: any, sub: any) => {
+                if (!acc[sub.category]) {
+                  acc[sub.category] = {
+                    points: 0,
+                    items: [],
+                  }
+                }
+
+                if (sub.status === "approved") {
+                  acc[sub.category].points +=
+                    sub.points_awarded || 0
+                }
+
+                acc[sub.category].items.push(sub)
+
+                return acc
+              },
+              {}
+            )
 
             const categoriesList = Object.entries(groupedData)
-              .map(([category, data]: any) => ({ category, ...data }))
+              .map(([category, data]: any) => ({
+                category,
+                ...data,
+              }))
               .sort((a, b) => b.points - a.points)
 
-            if (!activeCategory && categoriesList.length > 0) {
-              setActiveCategory(categoriesList[0].category)
-            }
-
-            const currentCategoryData = categoriesList.find(c => c.category === activeCategory)
+            const currentCategoryData = categoriesList.find(
+              (c) => c.category === activeCategory
+            )
 
             return (
               <div className="flex-1 flex overflow-hidden">
@@ -291,20 +405,36 @@ export default function AdminStudentsPage() {
                 {/* LEFT: Category Navigation */}
                 <div className="w-1/3 border-r bg-slate-50 overflow-y-auto">
                   <div className="p-4">
-                    <h4 className="text-xs font-semibold text-muted-foreground uppercase mb-3 tracking-wider">Categories</h4>
+                    <h4 className="text-xs font-semibold text-muted-foreground uppercase mb-3 tracking-wider">
+                      Categories
+                    </h4>
+
                     <div className="space-y-1">
                       {categoriesList.map((cat: any) => (
                         <button
                           key={cat.category}
-                          onClick={() => setActiveCategory(cat.category)}
+                          onClick={() =>
+                            setActiveCategory(cat.category)
+                          }
                           className={`w-full text-left px-4 py-3 rounded-md text-sm font-medium transition-colors flex items-center justify-between group
-                            ${activeCategory === cat.category 
-                              ? 'bg-white shadow-sm text-primary ring-1 ring-primary/20' 
-                              : 'hover:bg-white hover:shadow-sm text-muted-foreground'
+                            ${
+                              activeCategory === cat.category
+                                ? "bg-white shadow-sm text-primary ring-1 ring-primary/20"
+                                : "hover:bg-white hover:shadow-sm text-muted-foreground"
                             }`}
                         >
-                          <span className="truncate">{cat.category}</span>
-                          <Badge variant={activeCategory === cat.category ? "default" : "secondary"} className="text-[10px] h-5">
+                          <span className="truncate">
+                            {cat.category}
+                          </span>
+
+                          <Badge
+                            variant={
+                              activeCategory === cat.category
+                                ? "default"
+                                : "secondary"
+                            }
+                            className="text-[10px] h-5"
+                          >
                             {cat.points}
                           </Badge>
                         </button>
@@ -316,7 +446,10 @@ export default function AdminStudentsPage() {
                 {/* RIGHT: Achievement Details */}
                 <div className="w-2/3 bg-white overflow-y-auto p-6">
                   <div className="flex items-center gap-3 mb-6">
-                    <h3 className="text-xl font-bold text-slate-800">{currentCategoryData?.category}</h3>
+                    <h3 className="text-xl font-bold text-slate-800">
+                      {currentCategoryData?.category}
+                    </h3>
+
                     <Badge className="bg-green-100 text-green-800 border-green-200">
                       {currentCategoryData?.points} Points
                     </Badge>
@@ -324,51 +457,77 @@ export default function AdminStudentsPage() {
 
                   <div className="space-y-4">
                     {currentCategoryData?.items.map((sub: any) => (
-                      <div key={sub.id} className="border rounded-lg p-5 bg-slate-50 hover:bg-slate-100 transition-colors">
+                      <div
+                        key={sub.id}
+                        className="border rounded-lg p-5 bg-slate-50 hover:bg-slate-100 transition-colors"
+                      >
                         <div className="flex justify-between items-start mb-3">
                           <div className="flex-1">
-                            <h4 className="font-bold text-base text-slate-900">{sub.title}</h4>
+                            <h4 className="font-bold text-base text-slate-900">
+                              {sub.title}
+                            </h4>
+
                             <div className="flex items-center gap-2 mt-2 flex-wrap">
-                              <Badge variant="outline" className="text-xs px-2 py-0">
+                              <Badge
+                                variant="outline"
+                                className="text-xs px-2 py-0"
+                              >
                                 {sub.status}
                               </Badge>
+
                               <span className="text-xs text-muted-foreground">
-                                {new Date(sub.achievement_date).toLocaleDateString()}
+                                {new Date(
+                                  sub.achievement_date
+                                ).toLocaleDateString()}
                               </span>
                             </div>
                           </div>
-                         <div className="flex flex-col items-end ml-4">
-                           <span className="text-lg font-bold text-primary">
-                             +{sub.points_awarded}
-                           </span>
-                           
-                           {sub.is_capped && (
-                        <span className="text-xs text-orange-600"> ⚠ Capped to max (5) </span>)}
-                           <span className="text-[10px] text-muted-foreground uppercase font-semibold"> Points </span></div></div>  
-                        
+
+                          <div className="flex flex-col items-end ml-4">
+                            <span className="text-lg font-bold text-primary">
+                              +{sub.points_awarded}
+                            </span>
+
+                            {sub.is_capped && (
+                              <span className="text-xs text-orange-600">
+                                ⚠ Capped to max (5)
+                              </span>
+                            )}
+
+                            <span className="text-[10px] text-muted-foreground uppercase font-semibold">
+                              Points
+                            </span>
+                          </div>
+                        </div>
+
                         {/* --- VISIBILITY FOR LEVEL & SCOPE --- */}
                         <div className="flex flex-wrap gap-2 mb-4">
-                            {/* 1. Achievement Level Badge (Now reading from activity_type) */}
-                            {getLevelBadge(sub)}
+                          {/* 1. Achievement Level Badge */}
+                          {getLevelBadge(sub)}
                         </div>
-                        
+
                         {/* Description */}
                         <div className="bg-white p-4 rounded border border-slate-200 mb-4">
-                          <p className="text-sm font-semibold text-slate-800 mb-1">Details:</p>
+                          <p className="text-sm font-semibold text-slate-800 mb-1">
+                            Details:
+                          </p>
+
                           {sub.description ? (
                             <p className="text-sm text-slate-700 leading-relaxed whitespace-pre-wrap">
                               {sub.description}
                             </p>
                           ) : (
-                            <p className="text-sm text-slate-400 italic">No description provided for this entry.</p>
+                            <p className="text-sm text-slate-400 italic">
+                              No description provided for this entry.
+                            </p>
                           )}
                         </div>
 
                         {/* Proof Link */}
                         {sub.proof_url ? (
-                          <Button 
-                            variant="outline" 
-                            size="sm" 
+                          <Button
+                            variant="outline"
+                            size="sm"
                             className="w-full sm:w-auto"
                             onClick={(e) => {
                               e.stopPropagation()
@@ -379,13 +538,14 @@ export default function AdminStudentsPage() {
                             View Proof Document
                           </Button>
                         ) : (
-                          <span className="text-xs text-muted-foreground italic">No proof uploaded</span>
+                          <span className="text-xs text-muted-foreground italic">
+                            No proof uploaded
+                          </span>
                         )}
                       </div>
                     ))}
                   </div>
                 </div>
-
               </div>
             )
           })()}
@@ -393,11 +553,15 @@ export default function AdminStudentsPage() {
       </Dialog>
 
       {/* --- PROOF VIEWER DIALOG --- */}
-      <Dialog open={!!proofUrl} onOpenChange={() => setProofUrl(null)}>
+      <Dialog
+        open={!!proofUrl}
+        onOpenChange={() => setProofUrl(null)}
+      >
         <DialogContent className="max-w-4xl h-[80vh] p-0 overflow-hidden flex flex-col">
           <DialogHeader className="px-6 py-4 border-b flex-shrink-0">
             <DialogTitle>Submitted Document</DialogTitle>
           </DialogHeader>
+
           <div className="flex-1 bg-slate-100 w-full flex items-center justify-center p-4 overflow-hidden">
             {proofUrl && (
               <>
@@ -417,12 +581,17 @@ export default function AdminStudentsPage() {
               </>
             )}
           </div>
+
           <div className="p-4 border-t flex justify-end flex-shrink-0 bg-white">
-            <Button variant="secondary" onClick={() => setProofUrl(null)}>Close Viewer</Button>
+            <Button
+              variant="secondary"
+              onClick={() => setProofUrl(null)}
+            >
+              Close Viewer
+            </Button>
           </div>
         </DialogContent>
       </Dialog>
-
     </div>
   )
 }
