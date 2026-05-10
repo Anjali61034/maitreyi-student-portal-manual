@@ -98,20 +98,18 @@ export function NewSubmissionForm() {
     const averageSgpa = sum / validEntries.length
     const finalAvg = parseFloat(averageSgpa.toFixed(2))
 
-    if (userStream === "humanities") {
-      if (finalAvg >= 8.0) return 5
-      if (finalAvg >= 7.5) return 4
-      if (finalAvg >= 7.0) return 3
-      if (finalAvg >= 6.5) return 2
-      if (finalAvg >= 6.0) return 1
-    } else {
-      if (finalAvg >= 9.0) return 5
-      if (finalAvg >= 8.5) return 4
-      if (finalAvg >= 8.0) return 3
-      if (finalAvg >= 7.5) return 2
-      if (finalAvg >= 7.0) return 1
-    }
-    return 0
+if (userStream === "humanities") {
+  if (finalAvg >= 8.0) return 5
+  if (finalAvg >= 7.0) return 4
+  if (finalAvg >= 6.0) return 3
+} else {
+  // Science and Commerce
+  if (finalAvg >= 9.0) return 5
+  if (finalAvg >= 8.0) return 4
+  if (finalAvg >= 7.0) return 3
+  if (finalAvg >= 6.0) return 2
+}
+return 0
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
