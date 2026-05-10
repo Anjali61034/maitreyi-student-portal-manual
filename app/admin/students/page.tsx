@@ -42,29 +42,45 @@ export default function AdminStudentsPage() {
   const [activeCategory, setActiveCategory] = useState<string>("")
 
   // Fetch Data on Mount
-  useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true)
-      
-      // 1. Fetch all Students
-      const { data: studentsData } = await supabase
-        .from("profiles")
-        .select("*")
-        .eq("role", "student")
+ useEffect(() => {
+  const fetchData = async () => {
+    setLoading(true)
 
-      // 2. Fetch ALL submissions at once (Optimized)
-      const { data: submissionsData } = await supabase
+    // Fetch students (unchanged)
+    const { data: studentsData } = await supabase
+      .from("profiles")
+      .select("*")
+      .eq("role", "student")
+
+    // Paginate through ALL submissions
+    const PAGE_SIZE = 1000
+    let allSubs: any[] = []
+    let from = 0
+    let hasMore = true
+
+    while (hasMore) {
+      const { data, error } = await supabase
         .from("submissions")
         .select("*")
-        .range(0, 10000)
+        .range(from, from + PAGE_SIZE - 1)
 
-      setStudents(studentsData || [])
-      setAllSubmissions(submissionsData || [])
-      setLoading(false)
+      if (error || !data || data.length === 0) {
+        hasMore = false
+      } else {
+        allSubs = [...allSubs, ...data]
+        from += PAGE_SIZE
+        // If we got fewer rows than PAGE_SIZE, we've reached the end
+        if (data.length < PAGE_SIZE) hasMore = false
+      }
     }
 
-    fetchData()
-  }, [supabase])
+    setStudents(studentsData || [])
+    setAllSubmissions(allSubs)
+    setLoading(false)
+  }
+
+  fetchData()
+}, [supabase])
 
   // --- HELPER: Get Badge Label based on Stored Activity Type ---
   const getLevelBadge = (sub: any) => {
