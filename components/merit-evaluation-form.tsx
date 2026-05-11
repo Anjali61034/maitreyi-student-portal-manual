@@ -201,20 +201,39 @@ const tableRows = generatedList.map((student) => {
 })
 
     autoTable(doc, {
-      head: [tableColumn],
-      body: tableRows,
-      startY: 45,
-      theme: 'grid',
-      headStyles: { fillColor: [2, 48, 71] },
-      styles: { fontSize: 9 },
-      columnStyles: {
-        0: { cellWidth: 15 },
-        1: { cellWidth: 'auto' },
-        2: { cellWidth: 30 },
-        3: { cellWidth: 40 },
-        4: { cellWidth: 15 },
-      }
-    })
+  head: [tableColumn],
+  body: tableRows,
+  startY: 45,
+  theme: "grid",
+
+  headStyles: {
+    fillColor: [2, 48, 71],
+    fontSize: 9,
+    halign: "center",
+    valign: "middle",
+  },
+
+  styles: {
+    fontSize: 8,
+    cellPadding: 2,
+    overflow: "linebreak",
+    valign: "middle",
+  },
+
+  columnStyles: {
+    0: { cellWidth: 16 }, // Rank
+    1: { cellWidth: 34 }, // Student Name
+    2: { cellWidth: 34 }, // Student ID
+    3: { cellWidth: 14 }, // CGPA
+    4: { cellWidth: 18 }, // AER
+    5: { cellWidth: 14 }, // ECA
+    6: { cellWidth: 18 }, // Sports
+    7: { cellWidth: 20 }, // Outreach
+    8: { cellWidth: 20 }, // Industry
+    9: { cellWidth: 14 }, // NCC
+    10: { cellWidth: 14 }, // Total
+  }
+})
 
     doc.save(`Year_${yearFilter}.pdf`)
   }
