@@ -165,6 +165,7 @@ export function MeritEvaluationForm({ streamFilter, yearFilter, courseFilter, on
   "AEC",
   "ECA",
   "Sports",
+  "NCC",
   "Outreach",
   "Industry",
   "Total"
@@ -187,12 +188,13 @@ const tableRows = generatedList.map((student) => {
     student.full_name,
     student.student_id || "N/A",
 
-    getCategoryPoints("CGPA Evaluation"),
-    getCategoryPoints("AEC"),
-    getCategoryPoints("ECA"),
-    getCategoryPoints("Sports"),
-    getCategoryPoints("Outreach"),
-    getCategoryPoints("Industry"),
+   getCategoryPoints("CGPA Evaluation"),
+   getCategoryPoints("Academic Engagement and Research"),
+   getCategoryPoints("Extra Curricular Activities"),
+   getCategoryPoints("Sports"),
+  getCategoryPoints("National Cadet Corps"),
+   getCategoryPoints("Outreach Activities"),
+   getCategoryPoints("Industry Experience"),
     
     student.totalPoints
   ]
