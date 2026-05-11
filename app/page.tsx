@@ -1,10 +1,11 @@
 export default function HomePage() {
   return (
     <main className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-100 flex items-center justify-center px-6">
-      <div className="max-w-2xl w-full bg-white shadow-2xl rounded-3xl p-10 text-center border border-green-100">
+      <div className="max-w-2xl w-full bg-green-50/90 backdrop-blur-sm shadow-[0_20px_60px_rgba(0,0,0,0.12)] rounded-3xl p-10 text-center border border-green-100 scale-[1.02] transition-all duration-300">
 
-        <h1 className="text-4xl md:text-5xl font-bold text-green-600 mb-6">
-          AchieveX Submissions Closed
+        <h1 className="text-4xl md:text-5xl font-bold text-green-600 mb-6 leading-tight">
+          AchieveX Submissions <br />
+          Closed
         </h1>
 
         <p className="text-lg text-gray-700 leading-relaxed mb-4">
@@ -20,7 +21,7 @@ export default function HomePage() {
           Looking forward to seeing you all on Annual Day 🎉
         </p>
 
-        <div className="inline-block bg-green-100 text-green-600 px-6 py-3 rounded-full font-semibold">
+        <div className="inline-block bg-green-100 text-green-600 px-6 py-3 rounded-full font-semibold shadow-sm">
           — Team AchieveX
         </div>
 
