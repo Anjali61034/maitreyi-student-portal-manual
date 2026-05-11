@@ -21,6 +21,7 @@ export function MeritEvaluationForm({ streamFilter, yearFilter, courseFilter, on
   const [isGenerating, setIsGenerating] = useState(false)
   const [statusMessage, setStatusMessage] = useState<{ type: "success" | "error" | "warning", text: string } | null>(null)
   const [generatedList, setGeneratedList] = useState<any[]>([])
+  const [allSubmissions, setAllSubmissions] = useState<any[]>([])
 
   // REMOVED: Internal course state, as it is now managed by the parent
 
@@ -72,6 +73,7 @@ export function MeritEvaluationForm({ streamFilter, yearFilter, courseFilter, on
         .eq("status", "approved")
 
       if (subError) throw subError
+      setAllSubmissions(submissions || [])
 
       // 3. Calculate Totals, CGPA Values, and Rank
       const pointsMap: Record<string, number> = {}
@@ -170,7 +172,7 @@ export function MeritEvaluationForm({ streamFilter, yearFilter, courseFilter, on
 
 const tableRows = generatedList.map((student) => {
 
-  const studentSubs = submissions?.filter(
+  const studentSubs = allSubmissions?.filter(
     s => s.student_id === student.id
   ) || []
 
