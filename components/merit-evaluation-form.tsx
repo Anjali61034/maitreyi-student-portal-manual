@@ -155,14 +155,46 @@ export function MeritEvaluationForm({ streamFilter, yearFilter, courseFilter, on
     doc.setTextColor(100)
     doc.text(`Generated on: ${new Date().toLocaleDateString()}`, pageWidth / 2, 35, { align: "center" })
 
-    const tableColumn = ["Rank", "Student Name", "Student ID", "Course", "Points"]
-    const tableRows = generatedList.map((student, index) => [
-      student.rank,
-      student.full_name,
-      student.student_id || "N/A",
-      student.course_name?.substring(0, 20) + (student.course_name?.length > 20 ? "..." : "") || "N/A",
-      student.totalPoints
-    ])
+    const tableColumn = [
+  "Rank",
+  "Student Name",
+  "Student ID",
+  "CGPA",
+  "AEC",
+  "ECA",
+  "Sports",
+  "Outreach",
+  "Industry",
+  "Total"
+]
+
+const tableRows = generatedList.map((student) => {
+
+  const studentSubs = submissions?.filter(
+    s => s.student_id === student.id
+  ) || []
+
+  const getCategoryPoints = (categoryName: string) => {
+    return studentSubs
+      .filter(s => s.category === categoryName)
+      .reduce((sum, s) => sum + (s.points_awarded || 0), 0)
+  }
+
+  return [
+    student.rank,
+    student.full_name,
+    student.student_id || "N/A",
+
+    getCategoryPoints("CGPA Evaluation"),
+    getCategoryPoints("AEC"),
+    getCategoryPoints("ECA"),
+    getCategoryPoints("Sports"),
+    getCategoryPoints("Outreach"),
+    getCategoryPoints("Industry"),
+    
+    student.totalPoints
+  ]
+})
 
     autoTable(doc, {
       head: [tableColumn],
@@ -180,7 +212,7 @@ export function MeritEvaluationForm({ streamFilter, yearFilter, courseFilter, on
       }
     })
 
-    doc.save(`merit-list-${streamFilter}-${yearFilter}-${new Date().toISOString().split('T')[0]}.pdf`)
+    doc.save(`Year_${yearFilter}.pdf`)
   }
 
   return (
