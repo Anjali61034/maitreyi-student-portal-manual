@@ -200,39 +200,39 @@ const tableRows = generatedList.map((student) => {
   ]
 })
 
-    autoTable(doc, {
+  autoTable(doc, {
   head: [tableColumn],
   body: tableRows,
   startY: 45,
   theme: "grid",
-
+  margin: { left: 8, right: 8 },
   headStyles: {
     fillColor: [2, 48, 71],
-    fontSize: 9,
+    fontSize: 8,
     halign: "center",
     valign: "middle",
+    textColor: [255, 255, 255],
   },
-
   styles: {
-    fontSize: 8,
-    cellPadding: 2,
+    fontSize: 7,
+    cellPadding: 1.5,
     overflow: "linebreak",
     valign: "middle",
+    halign: "center",
   },
-
   columnStyles: {
-    0: { cellWidth: 16 }, // Rank
-    1: { cellWidth: 34 }, // Student Name
-    2: { cellWidth: 34 }, // Student ID
-    3: { cellWidth: 14 }, // CGPA
-    4: { cellWidth: 18 }, // AER
-    5: { cellWidth: 14 }, // ECA
-    6: { cellWidth: 18 }, // Sports
-    7: { cellWidth: 20 }, // Outreach
-    8: { cellWidth: 20 }, // Industry
-    9: { cellWidth: 14 }, // NCC
-    10: { cellWidth: 14 }, // Total
-  }
+    0:  { cellWidth: 12, halign: "center" }, // Rank
+    1:  { cellWidth: 28, halign: "left"   }, // Student Name
+    2:  { cellWidth: 24, halign: "center" }, // Student ID
+    3:  { cellWidth: 13, halign: "center" }, // CGPA
+    4:  { cellWidth: 13, halign: "center" }, // AEC
+    5:  { cellWidth: 13, halign: "center" }, // ECA
+    6:  { cellWidth: 13, halign: "center" }, // Sports
+    7:  { cellWidth: 13, halign: "center" }, // NCC
+    8:  { cellWidth: 16, halign: "center" }, // Outreach
+    9:  { cellWidth: 16, halign: "center" }, // Industry
+    10: { cellWidth: 13, halign: "center" }, // Total
+  },
 })
 
     doc.save(`Year_${yearFilter}.pdf`)
