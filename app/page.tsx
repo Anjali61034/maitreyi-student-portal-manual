@@ -87,26 +87,62 @@ export default function AchieveXClosed(): React.ReactElement {
         .achievex-card {
           animation: rise 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
         }
+
+        /* Mobile: compact centered square-ish card */
+        @media (max-width: 480px) {
+          .achievex-body {
+            padding: 1rem !important;
+            align-items: center !important;
+          }
+          .achievex-card {
+            padding: 1.5rem 1.25rem !important;
+            border-radius: 20px !important;
+            max-width: 260px !important;
+            width: 260px !important;
+          }
+          .achievex-heading {
+            font-size: 1.3rem !important;
+            margin-bottom: 1rem !important;
+          }
+          .achievex-paragraph {
+            font-size: 0.78rem !important;
+            line-height: 1.55 !important;
+            margin-bottom: 0.6rem !important;
+          }
+          .achievex-icon {
+            width: 40px !important;
+            height: 40px !important;
+            font-size: 18px !important;
+            margin-bottom: 1rem !important;
+          }
+          .achievex-tag {
+            font-size: 0.75rem !important;
+            padding: 0.4rem 1rem !important;
+          }
+          .achievex-last-p {
+            margin-bottom: 1.25rem !important;
+          }
+        }
       `}</style>
-      <main style={styles.body}>
+      <main className="achievex-body" style={styles.body}>
         <div className="achievex-card" style={styles.card}>
-          <div style={styles.iconWrap}>🎓</div>
-          <h1 style={styles.heading}>
+          <div className="achievex-icon" style={styles.iconWrap}>🎓</div>
+          <h1 className="achievex-heading" style={styles.heading}>
             AchieveX Submissions Closed
           </h1>
           <div style={styles.divider} />
-          <p style={styles.paragraph}>
+          <p className="achievex-paragraph" style={styles.paragraph}>
             Thank you to all students for submitting your achievements and
             participating in the AchieveX portal.
           </p>
-          <p style={styles.paragraph}>
+          <p className="achievex-paragraph" style={styles.paragraph}>
             The submission deadline is now officially over.
           </p>
-          <p style={styles.lastParagraph}>
+          <p className="achievex-paragraph achievex-last-p" style={styles.lastParagraph}>
             We appreciate everyone's efforts and enthusiasm. Looking forward
             to seeing you all on Annual Day 🎉
           </p>
-          <div style={styles.tag}>— Team AchieveX</div>
+          <div className="achievex-tag" style={styles.tag}>— Team AchieveX</div>
         </div>
       </main>
     </>
